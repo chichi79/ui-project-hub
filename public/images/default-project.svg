@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" fill="#f1f5f9"/>
+  <rect x="40" y="40" width="720" height="370" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="40" y="40" width="720" height="48" rx="12" fill="#f8fafc"/>
+  <circle cx="68" cy="64" r="6" fill="#f87171"/>
+  <circle cx="92" cy="64" r="6" fill="#fbbf24"/>
+  <circle cx="116" cy="64" r="6" fill="#34d399"/>
+  <rect x="160" y="56" width="400" height="16" rx="8" fill="#e2e8f0"/>
+  <rect x="80" y="120" width="280" height="20" rx="4" fill="#cbd5e1"/>
+  <rect x="80" y="156" width="200" height="12" rx="4" fill="#e2e8f0"/>
+  <rect x="80" y="176" width="240" height="12" rx="4" fill="#e2e8f0"/>
+  <rect x="80" y="220" width="120" height="36" rx="8" fill="#0c8ce9"/>
+  <rect x="400" y="120" width="280" height="180" rx="8" fill="#e0effe" stroke="#b9dffd" stroke-width="1"/>
+  <path d="M480 180 L520 220 L560 200 L600 240 L640 200 L680 240" stroke="#36a6f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="320" y="380" width="160" height="28" rx="14" fill="#0c8ce9" opacity="0.15"/>
+  <text x="400" y="400" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#006fc7">FE Project</text>
+</svg>

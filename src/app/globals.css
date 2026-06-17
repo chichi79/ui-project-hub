@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+@layer base {
+  body {
+    @apply bg-[#f7faf8] text-zinc-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:ring-offset-2 disabled:opacity-40;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:ring-offset-2;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-zinc-500 transition hover:bg-brand-50 hover:text-brand-700;
+  }
+  .input-field {
+    @apply w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/15;
+  }
+  .card {
+    @apply rounded-2xl border border-zinc-200/80 bg-white;
+  }
+  .section-title {
+    @apply text-sm font-medium text-zinc-900;
+  }
+  .section-desc {
+    @apply text-sm text-zinc-500;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-0.5 text-xs font-medium text-zinc-600;
+  }
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight text-zinc-900;
+  }
+  .page-desc {
+    @apply mt-1 text-sm text-zinc-500;
+  }
+}
