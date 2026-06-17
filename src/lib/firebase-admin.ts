@@ -34,5 +34,23 @@ function initFirebase(): App {
 }
 
 export function getFirestoreDb(): Firestore {
-  return getFirestore(initFirebase());
+  const databaseId = process.env.FIRESTORE_DATABASE_ID;
+  return databaseId
+    ? getFirestore(initFirebase(), databaseId)
+    : getFirestore(initFirebase());
+}
+
+export function isFirestoreNotFoundError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: unknown }).code === 5
+  );
+}
+
+export function firestoreSetupError(): Error {
+  return new Error(
+    "Firestore 데이터베이스가 없습니다. Firebase Console → Firestore Database → 데이터베이스 만들기에서 Native mode DB를 먼저 생성하세요. (리전: Seoul 또는 Tokyo)"
+  );
 }

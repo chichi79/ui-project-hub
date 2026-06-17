@@ -2,7 +2,7 @@ import type { Comment, FeedbackStatus, FeedbackType, ProgressUpdate, Project, Pr
 import { isFeedbackType } from "./feedback";
 import { verifyPassword } from "./auth";
 import type { DocumentData } from "firebase-admin/firestore";
-import { getFirestoreDb } from "./firebase-admin";
+import { firestoreSetupError, getFirestoreDb, isFirestoreNotFoundError } from "./firebase-admin";
 
 export type { Comment, ProgressUpdate, Project, ProjectStatus } from "./types";
 
@@ -92,7 +92,13 @@ async function ensureSeed() {
 
 async function seedIfEmpty() {
   const db = getFirestoreDb();
-  const existing = await db.collection(PROJECTS).limit(1).get();
+  let existing;
+  try {
+    existing = await db.collection(PROJECTS).limit(1).get();
+  } catch (error) {
+    if (isFirestoreNotFoundError(error)) throw firestoreSetupError();
+    throw error;
+  }
   if (!existing.empty) return;
 
   const t = now();
