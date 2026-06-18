@@ -1,34 +1,10 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextRequest, NextResponse } from "next/server";
-import { ALLOWED_IMAGE_TYPES, resolveImageMime } from "@/lib/image-mime";
+import { resolveImageMime } from "@/lib/image-mime";
 import { saveImageBuffer } from "@/lib/storage";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
-  const contentType = request.headers.get("content-type") || "";
-
-  if (contentType.includes("application/json")) {
-    try {
-      const body = (await request.json()) as HandleUploadBody;
-      const jsonResponse = await handleUpload({
-        body,
-        request,
-        onBeforeGenerateToken: async () => ({
-          allowedContentTypes: [...ALLOWED_IMAGE_TYPES],
-          maximumSizeInBytes: MAX_SIZE,
-        }),
-        onUploadCompleted: async () => {},
-      });
-      return NextResponse.json(jsonResponse);
-    } catch (err) {
-      console.error("Blob client upload failed:", err);
-      const message =
-        err instanceof Error ? err.message : "Blob 업로드에 실패했습니다.";
-      return NextResponse.json({ error: message }, { status: 500 });
-    }
-  }
-
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
