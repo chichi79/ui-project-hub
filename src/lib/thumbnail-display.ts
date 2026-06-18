@@ -1,13 +1,14 @@
 export const DEFAULT_THUMBNAIL = "/images/default-project.svg";
 
-/** Vercel 프로덕션에는 /uploads 로컬 경로 파일이 없음 */
+/** Vercel·프로덕션 호스트에는 /uploads 로컬 경로 파일이 없음 */
 function isUnavailableLocalUpload(thumbnail: string): boolean {
   if (!thumbnail.startsWith("/uploads/")) return false;
+  if (process.env.VERCEL === "1") return true;
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
     return host !== "localhost" && host !== "127.0.0.1" && host !== "[::1]";
   }
-  return process.env.VERCEL === "1";
+  return false;
 }
 
 export function getDisplayThumbnail(thumbnail: string | null | undefined): string {

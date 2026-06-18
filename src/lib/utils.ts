@@ -53,18 +53,31 @@ export function parseStoredDate(dateStr: string): Date {
   return new Date(trimmed);
 }
 
+/** Node(서버)와 브라우저에서 동일한 문자열을 보장하기 위해 sv-SE 중간 포맷 사용 */
 export function formatDate(dateStr: string): string {
   const d = parseStoredDate(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
 
-  return d.toLocaleString("ko-KR", {
+  const normalized = d.toLocaleString("sv-SE", {
     year: "numeric",
-    month: "short",
-    day: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: DISPLAY_TIME_ZONE,
   });
+  const [datePart, timePart] = normalized.split(" ");
+  if (!datePart || !timePart) return dateStr;
+
+  const [year, month, day] = datePart.split("-");
+  const [hourStr, minute] = timePart.split(":");
+  const hour24 = Number(hourStr);
+  if (!year || !month || !day || Number.isNaN(hour24) || !minute) return dateStr;
+
+  const period = hour24 < 12 ? "오전" : "오후";
+  const hour12 = hour24 % 12 || 12;
+  return `${year}년 ${Number(month)}월 ${Number(day)}일 ${period} ${hour12}:${minute}`;
 }
 
 export function parseTags(tags: string): string[] {
