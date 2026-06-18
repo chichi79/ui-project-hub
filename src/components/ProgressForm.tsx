@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProjectStatus } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/utils";
+import ProgressSlider from "@/components/ProgressSlider";
 
 const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_hold"];
 
@@ -67,21 +68,7 @@ export default function ProgressForm({
         ))}
       </select>
 
-      <div>
-        <div className="mb-1.5 flex items-center justify-between text-sm">
-          <label className="font-medium text-zinc-700">진행률</label>
-          <span className="tabular-nums text-zinc-500">{progress}%</span>
-        </div>
-        <input
-          name="progress"
-          type="range"
-          min={0}
-          max={100}
-          value={progress}
-          onChange={(e) => setProgress(Number(e.target.value))}
-          className="w-full accent-brand-600"
-        />
-      </div>
+      <ProgressSlider value={progress} onChange={setProgress} />
 
       <textarea
         name="note"

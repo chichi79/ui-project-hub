@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Project, ProjectStatus } from "@/lib/types";
 import { STATUS_LABELS, normalizeUrl } from "@/lib/utils";
 import ImageUpload from "./ImageUpload";
+import ProgressSlider from "./ProgressSlider";
 
 const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_hold"];
 
@@ -18,6 +19,7 @@ export default function ProjectEditForm({ project, password, onCancel, onSaved }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(project.thumbnail);
+  const [progress, setProgress] = useState(project.progress);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,8 +78,9 @@ export default function ProjectEditForm({ project, password, onCancel, onSaved }
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>
-        <input name="progress" type="number" min={0} max={100} defaultValue={project.progress} className="input-field" />
       </div>
+
+      <ProgressSlider value={progress} onChange={setProgress} />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <input name="repo_url" type="text" defaultValue={project.repo_url || ""} className="input-field" placeholder="저장소 URL" />

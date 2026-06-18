@@ -10,6 +10,7 @@ import AuthorInput from "@/components/AuthorInput";
 import { setUserName } from "@/lib/user";
 import { normalizeUrl } from "@/lib/utils";
 import { DEFAULT_PROJECT_PASSWORD } from "@/lib/auth";
+import ProgressSlider from "@/components/ProgressSlider";
 
 const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_hold"];
 
@@ -18,6 +19,7 @@ export default function NewProjectPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -144,9 +146,7 @@ export default function NewProjectPage() {
           </Field>
         </div>
 
-        <Field label="진행률 (%)">
-          <input name="progress" type="number" min={0} max={100} defaultValue={0} className="input-field" />
-        </Field>
+        <ProgressSlider value={progress} onChange={setProgress} />
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="저장소 URL" hint="https:// 없이 입력 가능">
