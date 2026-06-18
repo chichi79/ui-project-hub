@@ -8,7 +8,7 @@ import {
   updateProject,
 } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
-import { generateUrlThumbnail } from "@/lib/thumbnail";
+import { generateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
 import { normalizeUrl } from "@/lib/utils";
 
@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       thumbnail = bodyThumbnail.trim();
     } else if (bodyThumbnail === "") {
       const siteUrl = pickSiteUrl(demoUrl, repoUrl);
-      thumbnail = siteUrl ? await generateUrlThumbnail(siteUrl) : null;
+      thumbnail = siteUrl ? await generateProjectThumbnail(siteUrl) : null;
     }
 
     const project = await updateProject(projectId, {

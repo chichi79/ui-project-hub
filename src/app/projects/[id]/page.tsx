@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   getComments,
@@ -13,7 +12,7 @@ import {
   parseTags,
 } from "@/lib/utils";
 import type { ProjectStatus } from "@/lib/types";
-import { getDisplayThumbnail } from "@/lib/thumbnail-display";
+import ProjectThumbnail from "@/components/ProjectThumbnail";
 import { CommentSection } from "@/components/CommentSection";
 import { OwnerPanel } from "@/components/ProjectDetailClient";
 
@@ -31,7 +30,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const comments = await getComments(project.id);
   const progressUpdates = await getProgressUpdates(project.id);
   const tags = parseTags(project.tags);
-  const imageSrc = getDisplayThumbnail(project.thumbnail);
 
   return (
     <div>
@@ -46,14 +44,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         <div className="space-y-6 lg:col-span-2">
           <article className="card overflow-hidden">
             <div className="relative aspect-[16/9] w-full bg-zinc-100">
-              <Image
-                src={imageSrc}
-                alt={project.title}
-                fill
-                className="object-cover"
-                unoptimized
-                priority
-              />
+              <ProjectThumbnail src={project.thumbnail} alt={project.title} />
             </div>
 
             <div className="p-6 sm:p-8">

@@ -47,7 +47,11 @@ export default function ImageUpload({ value, onChange, label = "캡처 이미지
       {value ? (
         <div className="overflow-hidden rounded-xl border border-zinc-200">
           <div className="relative aspect-video w-full bg-zinc-100">
-            <Image src={value} alt="캡처 이미지" fill className="object-cover" unoptimized />
+            {value.startsWith("data:") ? (
+              <img src={value} alt="캡처 이미지" className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+              <Image src={value} alt="캡처 이미지" fill className="object-cover" unoptimized />
+            )}
           </div>
           <div className="flex gap-2 border-t border-zinc-100 p-2">
             <button

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Comment, Project, ProjectStatus } from "@/lib/types";
-import { getDisplayThumbnail } from "@/lib/thumbnail-display";
 import { STATUS_COLORS, STATUS_LABELS, formatDate, parseTags } from "@/lib/utils";
 import CommentTicker from "@/components/CommentTicker";
+import ProjectThumbnail from "@/components/ProjectThumbnail";
 
 interface ProjectCardProps {
   project: Project;
@@ -12,7 +11,6 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, comments = [] }: ProjectCardProps) {
   const tags = parseTags(project.tags);
-  const imageSrc = getDisplayThumbnail(project.thumbnail);
 
   return (
     <Link
@@ -20,13 +18,7 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
       className="card group flex flex-col overflow-hidden transition hover:border-brand-200 hover:shadow-soft"
     >
       <div className="relative aspect-[16/10] w-full bg-zinc-100">
-        <Image
-          src={imageSrc}
-          alt={project.title}
-          fill
-          className="object-cover transition duration-500 group-hover:scale-[1.02]"
-          unoptimized
-        />
+        <ProjectThumbnail src={project.thumbnail} alt={project.title} className="object-cover transition duration-500 group-hover:scale-[1.02]" />
         <span
           className={`absolute left-3 top-3 rounded-full border px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm ${STATUS_COLORS[project.status as ProjectStatus]}`}
         >

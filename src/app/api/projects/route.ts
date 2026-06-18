@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createProject, getAllProjects, getProjectStats } from "@/lib/db";
 import { hashPassword, validatePasswordInput } from "@/lib/auth";
-import { generateUrlThumbnail } from "@/lib/thumbnail";
+import { generateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
 import { normalizeUrl } from "@/lib/utils";
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       const siteUrl = pickSiteUrl(demoUrl, repoUrl);
       if (siteUrl) {
         try {
-          thumbnail = await generateUrlThumbnail(siteUrl);
+          thumbnail = await generateProjectThumbnail(siteUrl);
         } catch (thumbErr) {
           console.warn("썸네일 생성 실패, 기본 이미지 사용:", thumbErr);
         }

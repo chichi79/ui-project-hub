@@ -99,9 +99,32 @@ function isValidHttpUrl(url: string): boolean {
   }
 }
 
-async function captureViaPageMeta(siteUrl: string): Promise<string | null> {
+export async function generateProjectThumbnail(siteUrl: string): Promise<string> {
+  const url = siteUrl.trim();
+  if (!isValidHttpUrl(url)) {
+    throw new Error("유효하지 않은 URL");
+  }
+
+  const fastMethods = [
+    () => captureViaPageMeta(url, 5_000),
+    () => captureViaMicrolink(url, 8_000),
+  ];
+
+  for (const method of fastMethods) {
+    try {
+      const result = await method();
+      if (result) return result;
+    } catch {
+      // try next
+    }
+  }
+
+  return generateUrlThumbnail(url);
+}
+
+async function captureViaPageMeta(siteUrl: string, timeoutMs = 15_000): Promise<string | null> {
   const res = await fetch(siteUrl, {
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(timeoutMs),
     headers: { "User-Agent": "Mozilla/5.0 (compatible; UIProjectHub/1.0)" },
     redirect: "follow",
   });
@@ -114,9 +137,9 @@ async function captureViaPageMeta(siteUrl: string): Promise<string | null> {
   return downloadAndSave(imageUrl);
 }
 
-async function captureViaMicrolink(siteUrl: string): Promise<string | null> {
+async function captureViaMicrolink(siteUrl: string, timeoutMs = 20_000): Promise<string | null> {
   const api = `https://api.microlink.io/?url=${encodeURIComponent(siteUrl)}&screenshot=true&meta=false`;
-  const res = await fetch(api, { signal: AbortSignal.timeout(20000) });
+  const res = await fetch(api, { signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) return null;
 
   const json = await res.json();
