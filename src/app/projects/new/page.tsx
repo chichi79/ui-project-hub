@@ -87,10 +87,6 @@ export default function NewProjectPage() {
         <p className="page-desc">누구나 등록할 수 있습니다. 수정·삭제 시 비밀번호가 필요합니다.</p>
       </div>
 
-      <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-brand-900">
-        기본 수정 비밀번호는 <strong>{DEFAULT_PROJECT_PASSWORD}</strong>입니다. 등록 시 그대로 두거나 원하는 비밀번호로 변경할 수 있습니다.
-      </div>
-
       <div className="grid gap-8 lg:grid-cols-3">
         <form onSubmit={handleSubmit} className="card space-y-5 p-6 sm:p-8 lg:col-span-2">
         {error && (
@@ -123,29 +119,34 @@ export default function NewProjectPage() {
           </Field>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-2">
-          <Field label="수정 비밀번호" required hint={`기본값 ${DEFAULT_PROJECT_PASSWORD}`}>
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={4}
-              defaultValue={DEFAULT_PROJECT_PASSWORD}
-              className="input-field"
-              placeholder="비밀번호"
-            />
-          </Field>
-          <Field label="비밀번호 확인" required>
-            <input
-              name="password_confirm"
-              type="password"
-              required
-              minLength={4}
-              defaultValue={DEFAULT_PROJECT_PASSWORD}
-              className="input-field"
-              placeholder="비밀번호 확인"
-            />
-          </Field>
+        <div className="space-y-4 rounded-xl border border-brand-100 bg-brand-50/60 p-4">
+          <p className="text-sm text-brand-900">
+            기본 수정 비밀번호는 <strong>{DEFAULT_PROJECT_PASSWORD}</strong>입니다. 등록 시 그대로 두거나 원하는 비밀번호로 변경할 수 있습니다.
+          </p>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Field label="수정 비밀번호" required>
+              <input
+                name="password"
+                type="password"
+                required
+                minLength={4}
+                defaultValue={DEFAULT_PROJECT_PASSWORD}
+                className="input-field"
+                placeholder="비밀번호"
+              />
+            </Field>
+            <Field label="비밀번호 확인" required>
+              <input
+                name="password_confirm"
+                type="password"
+                required
+                minLength={4}
+                defaultValue={DEFAULT_PROJECT_PASSWORD}
+                className="input-field"
+                placeholder="비밀번호 확인"
+              />
+            </Field>
+          </div>
         </div>
 
         <ProgressSlider value={progress} onChange={setProgress} />
