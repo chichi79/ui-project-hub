@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { ProjectStatus } from "@/lib/types";
 
 export interface StatBoardItem {
@@ -14,49 +15,38 @@ interface ProjectStatsBoardProps {
 }
 
 export default function ProjectStatsBoard({ items }: ProjectStatsBoardProps) {
-  const marqueeText = items.map((item) => `${item.label} ${item.value}`).join("   ·   ");
+  const searchParams = useSearchParams();
+  const current = searchParams.get("status") || "all";
 
   return (
-    <div className="signboard relative overflow-hidden rounded-xl border border-brand-500/35 bg-[#081810] px-4 py-3 shadow-[inset_0_0_30px_rgba(34,197,116,0.07)]">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-70" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(34,197,116,0.9)]" />
-          </span>
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand-400">
-            UI Project Hub Live
-          </span>
-        </div>
-        <span className="hidden font-mono text-[10px] text-brand-500/60 sm:inline">
-          {new Date().toLocaleDateString("ko-KR")}
-        </span>
-      </div>
+    <div className="grid grid-cols-3 gap-2 rounded-xl border border-zinc-200/80 bg-white p-2 sm:grid-cols-6 sm:gap-3 sm:p-3">
+      {items.map((item) => {
+        const key = item.status || "all";
+        const active = key === current;
 
-      <div className="mb-3 hidden flex-wrap gap-2 sm:flex">
-        {items.map((item) => (
+        return (
           <Link
             key={item.label}
-            href={!item.status || item.status === "all" ? "/" : `/?status=${item.status}`}
-            className="signboard-cell group rounded-md border border-brand-500/25 bg-black/35 px-3 py-1.5 transition hover:border-brand-400/60 hover:bg-brand-500/10"
+            href={key === "all" ? "/" : `/?status=${key}`}
+            className={`rounded-lg px-2 py-2.5 text-center transition sm:px-3 ${
+              active
+                ? "bg-brand-50 ring-1 ring-brand-200"
+                : "hover:bg-zinc-50"
+            }`}
           >
-            <span className="text-[11px] text-brand-200/75">{item.label}</span>
-            <span className="ml-2 font-mono text-base font-bold tabular-nums text-brand-300 text-shadow-glow group-hover:text-brand-200">
-              {String(item.value).padStart(2, "0")}
-            </span>
+            <p className={`text-xs ${active ? "font-medium text-brand-700" : "text-zinc-500"}`}>
+              {item.label}
+            </p>
+            <p
+              className={`mt-0.5 text-xl font-semibold tabular-nums sm:text-2xl ${
+                active ? "text-brand-700" : "text-zinc-900"
+              }`}
+            >
+              {item.value}
+            </p>
           </Link>
-        ))}
-      </div>
-
-      <div className="signboard-marquee relative overflow-hidden">
-        <div className="signboard-track flex w-max gap-12 whitespace-nowrap py-0.5">
-          {[marqueeText, marqueeText].map((text, i) => (
-            <span key={i} className="font-mono text-sm tracking-wide text-brand-300/90">
-              {text}
-            </span>
-          ))}
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }

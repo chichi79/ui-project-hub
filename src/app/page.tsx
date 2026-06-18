@@ -41,7 +41,9 @@ export default async function Home({ searchParams }: HomeProps) {
         <h1 className="page-title">프로젝트</h1>
         <p className="page-desc">UI 팀의 자체 프로젝트를 모아보고 의견을 나눕니다.</p>
         <div className="mt-5">
-          <ProjectStatsBoard items={statItems} />
+          <Suspense fallback={<div className="h-[72px] rounded-xl border border-zinc-200/80 bg-white" />}>
+            <ProjectStatsBoard items={statItems} />
+          </Suspense>
         </div>
       </div>
 

@@ -68,25 +68,4 @@
   .text-caption {
     @apply text-xs leading-normal tracking-[-0.01em] text-zinc-500;
   }
-
-  .signboard-marquee {
-    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  }
-
-  .signboard-track {
-    animation: signboard-scroll 22s linear infinite;
-  }
-
-  .text-shadow-glow {
-    text-shadow: 0 0 10px rgba(74, 222, 148, 0.45);
-  }
-}
-
-@keyframes signboard-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
 }
