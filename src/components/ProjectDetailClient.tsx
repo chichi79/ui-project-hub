@@ -29,6 +29,7 @@ export function OwnerPanel({ project, progressUpdates, onProjectUpdate }: OwnerP
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [recapturing, setRecapturing] = useState(false);
+  const [recaptureSuccess, setRecaptureSuccess] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
 
@@ -106,15 +107,17 @@ export function OwnerPanel({ project, progressUpdates, onProjectUpdate }: OwnerP
 
     setRecapturing(true);
     setError("");
+    setRecaptureSuccess(false);
     try {
-      const res = await fetch(`/api/projects/${project.id}`, {
-        method: "PATCH",
+      const res = await fetch(`/api/projects/${project.id}/thumbnail`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, thumbnail: "" }),
+        body: JSON.stringify({ password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "썸네일 저장 실패");
       onProjectUpdate(data);
+      setRecaptureSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "캡처 실패");
     } finally {
@@ -185,14 +188,19 @@ export function OwnerPanel({ project, progressUpdates, onProjectUpdate }: OwnerP
             />
 
             {(project.demo_url || project.repo_url) && (
-              <button
-                type="button"
-                onClick={handleRecapture}
-                disabled={recapturing}
-                className="btn-secondary mt-3 w-full text-sm"
-              >
-                {recapturing ? "캡처 중..." : "썸네일 다시 캡처"}
-              </button>
+              <div className="mt-3 space-y-2">
+                <button
+                  type="button"
+                  onClick={handleRecapture}
+                  disabled={recapturing}
+                  className="btn-secondary w-full text-sm"
+                >
+                  {recapturing ? "캡처 중..." : "썸네일 다시 캡처"}
+                </button>
+                {recaptureSuccess && (
+                  <p className="text-xs text-brand-700">썸네일이 갱신되었습니다.</p>
+                )}
+              </div>
             )}
 
             {editing && (

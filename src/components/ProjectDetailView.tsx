@@ -41,7 +41,12 @@ export default function ProjectDetailView({
           <div className="p-6 sm:p-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               <div className="relative mx-auto h-28 w-44 shrink-0 overflow-hidden rounded-xl border border-zinc-100 bg-zinc-50 sm:mx-0 sm:h-32 sm:w-48">
-                <ProjectThumbnail src={project.thumbnail} alt={project.title} className="object-cover object-top" />
+                <ProjectThumbnail
+                  key={`${project.id}-${project.updated_at}`}
+                  src={project.thumbnail}
+                  alt={project.title}
+                  className="object-cover object-top"
+                />
               </div>
 
               <div className="min-w-0 flex-1">

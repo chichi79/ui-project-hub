@@ -140,7 +140,8 @@ async function captureViaPageMeta(siteUrl: string, timeoutMs = 15_000): Promise<
 async function captureViaMicrolink(siteUrl: string, timeoutMs = 20_000): Promise<string | null> {
   const api =
     `https://api.microlink.io/?url=${encodeURIComponent(siteUrl)}` +
-    "&screenshot=true&meta=false&viewport.width=1280&viewport.height=720";
+    "&screenshot=true&meta=false&viewport.width=1280&viewport.height=720" +
+    "&waitForTimeout=5000&waitUntil=networkidle2";
   const res = await fetch(api, { signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) return null;
 
@@ -149,6 +150,23 @@ async function captureViaMicrolink(siteUrl: string, timeoutMs = 20_000): Promise
   if (!shotUrl) return null;
 
   return downloadAndSave(shotUrl);
+}
+
+/** 재캡처 전용: 화면 스크린샷 우선 (og:image 로고 제외) */
+export async function regenerateProjectThumbnail(siteUrl: string): Promise<string> {
+  const url = siteUrl.trim();
+  if (!isValidHttpUrl(url)) {
+    throw new Error("유효하지 않은 URL");
+  }
+
+  try {
+    const screenshot = await captureViaMicrolink(url, 18_000);
+    if (screenshot) return screenshot;
+  } catch {
+    // fallback below
+  }
+
+  return generateUrlThumbnail(url);
 }
 
 async function captureViaMshots(siteUrl: string): Promise<string | null> {
