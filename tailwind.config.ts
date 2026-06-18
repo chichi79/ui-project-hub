@@ -19,7 +19,21 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Pretendard Variable", "Pretendard", "system-ui", "sans-serif"],
+        sans: [
+          "Pretendard Variable",
+          "Pretendard",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "system-ui",
+          "sans-serif",
+        ],
+      },
+      fontSize: {
+        body: ["15px", { lineHeight: "1.75", letterSpacing: "-0.01em" }],
+        caption: ["12px", { lineHeight: "1.5", letterSpacing: "-0.01em" }],
+      },
+      letterSpacing: {
+        tightish: "-0.02em",
       },
       boxShadow: {
         soft: "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(22,163,95,0.08)",

@@ -27,7 +27,7 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="mb-1.5 flex items-start justify-between gap-2">
-          <h3 className="line-clamp-1 text-[15px] font-medium text-zinc-900 group-hover:text-brand-700">
+          <h3 className="line-clamp-1 text-[15px] font-semibold tracking-tightish text-zinc-900 group-hover:text-brand-700">
             {project.title}
           </h3>
           <span
@@ -37,7 +37,7 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
           </span>
         </div>
 
-        <p className="mb-2 line-clamp-2 text-sm leading-relaxed text-zinc-500">
+        <p className="text-body mb-2 line-clamp-2 text-zinc-600">
           {project.description || "설명 없음"}
         </p>
 

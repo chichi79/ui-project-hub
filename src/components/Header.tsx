@@ -15,11 +15,11 @@ export default function Header() {
             priority
           />
           <div className="min-w-0">
-            <p className="truncate text-[17px] font-medium tracking-[-0.02em] text-zinc-900">
-              <span className="font-semibold text-brand-700">UI</span>
-              <span className="text-zinc-600"> Project Hub</span>
+            <p className="truncate text-[17px] font-semibold tracking-tightish text-zinc-900">
+              <span className="text-brand-700">UI</span>
+              <span className="font-medium text-zinc-600"> Project Hub</span>
             </p>
-            <p className="mt-0.5 hidden text-xs text-zinc-400 sm:block">
+            <p className="text-caption mt-0.5 hidden sm:block">
               UI 팀 자체 프로젝트 & 아이디어 보드
             </p>
           </div>

@@ -57,7 +57,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                     <span className="text-sm tabular-nums text-zinc-400">{project.progress}%</span>
                   </div>
 
-                  <h1 className="mb-3 text-2xl font-semibold tracking-tight text-zinc-900">
+                  <h1 className="mb-3 text-2xl font-semibold leading-tight tracking-tightish text-zinc-900 sm:text-[1.75rem]">
                     {project.title}
                   </h1>
 
@@ -85,7 +85,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </div>
 
               <div className="mt-6 border-t border-zinc-100 pt-6">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+                <p className="text-body whitespace-pre-wrap">
                   {project.description || "설명이 없습니다."}
                 </p>
 
