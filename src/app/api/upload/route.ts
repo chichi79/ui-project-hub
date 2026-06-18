@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveImageMime } from "@/lib/image-mime";
-import { createBlobClientToken, getBlobReadWriteToken } from "@/lib/blob-token";
 import { saveImageBuffer } from "@/lib/storage";
 
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -8,28 +7,6 @@ const MAX_SIZE = 5 * 1024 * 1024;
 export const runtime = "nodejs";
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
-
-async function handleTokenRequest(request: NextRequest) {
-  const body = (await request.json()) as {
-    pathname?: string;
-    contentType?: string;
-  };
-
-  if (!getBlobReadWriteToken()) {
-    return NextResponse.json({ mode: "server" as const });
-  }
-
-  const pathname =
-    body.pathname?.trim() ||
-    `uploads/capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-
-  const clientToken = await createBlobClientToken(pathname);
-  return NextResponse.json({
-    mode: "blob" as const,
-    clientToken,
-    pathname,
-  });
-}
 
 async function handleFormUpload(request: NextRequest) {
   const formData = await request.formData();
@@ -64,12 +41,7 @@ async function handleFormUpload(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const contentType = request.headers.get("content-type") || "";
-
   try {
-    if (contentType.includes("application/json")) {
-      return await handleTokenRequest(request);
-    }
     return await handleFormUpload(request);
   } catch (err) {
     console.error("Upload failed:", err);

@@ -29,27 +29,52 @@ async function saveToVercelBlob(
   buffer: Buffer,
   contentType: string
 ): Promise<string> {
-  if (!getBlobToken()) {
+  const token = getBlobToken();
+  if (!token) {
     throw new Error(
       "Blob Storage 토큰이 없습니다. Vercel 환경 변수를 확인한 뒤 재배포해 주세요."
     );
   }
 
-  const { put } = await import("@vercel/blob");
-  const uploadPromise = put(`uploads/${filename}`, buffer, {
-    access: "public",
-    contentType,
-    token: getBlobToken(),
-    addRandomSuffix: true,
-  });
+  // SDK의 ReadableStream 변환이 서버리스 환경에서 hang되는 경우가 있어
+  // Vercel Blob REST API를 직접 fetch로 호출합니다.
+  const suffix = `-${Math.random().toString(36).slice(2, 8)}`;
+  const nameWithSuffix = filename.replace(/(\.[^.]+)$/, `${suffix}$1`);
+  const params = new URLSearchParams({ pathname: `uploads/${nameWithSuffix}` });
 
-  // Vercel 함수 maxDuration(30s) 이전에 명시적으로 타임아웃
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error("Blob 업로드 타임아웃. 잠시 후 다시 시도해 주세요.")), 20_000)
-  );
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20_000);
 
-  const blob = await Promise.race([uploadPromise, timeoutPromise]);
-  return blob.url;
+  try {
+    const res = await fetch(`https://blob.vercel-storage.com/?${params}`, {
+      method: "PUT",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "x-api-version": "9",
+        "x-content-type": contentType,
+      },
+      body: new Uint8Array(buffer),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      throw new Error(
+        `Blob 업로드 실패 (${res.status})${errText ? `: ${errText.slice(0, 120)}` : ""}`
+      );
+    }
+
+    const data = (await res.json()) as { url: string };
+    if (!data.url) throw new Error("Blob URL을 받지 못했습니다.");
+    return data.url;
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Blob 업로드 타임아웃. 잠시 후 다시 시도해 주세요.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
