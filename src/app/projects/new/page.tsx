@@ -11,6 +11,7 @@ import { setUserName } from "@/lib/user";
 import { normalizeUrl } from "@/lib/utils";
 import { DEFAULT_PROJECT_PASSWORD } from "@/lib/auth";
 import ProgressSlider from "@/components/ProgressSlider";
+import StatusGuide from "@/components/StatusGuide";
 
 const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_hold"];
 
@@ -112,7 +113,7 @@ export default function NewProjectPage() {
           <Field label="작성자" required>
             <AuthorInput />
           </Field>
-          <Field label="상태">
+          <Field label="상태" hint="아래 안내 참고">
             <select name="status" defaultValue="idea" className="input-field">
               {STATUSES.map((s) => (
                 <option key={s} value={s}>{STATUS_LABELS[s]}</option>
@@ -120,6 +121,8 @@ export default function NewProjectPage() {
             </select>
           </Field>
         </div>
+
+        <StatusGuide />
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="수정 비밀번호" required hint={`기본값 ${DEFAULT_PROJECT_PASSWORD}`}>
