@@ -15,29 +15,35 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="card group flex flex-col overflow-hidden transition hover:border-brand-200 hover:shadow-soft"
+      className="card group flex gap-4 p-4 transition hover:border-brand-200 hover:shadow-soft sm:gap-5 sm:p-5"
     >
-      <div className="relative aspect-[16/10] w-full bg-zinc-100">
-        <ProjectThumbnail src={project.thumbnail} alt={project.title} className="object-cover transition duration-500 group-hover:scale-[1.02]" />
-        <span
-          className={`absolute left-3 top-3 rounded-full border px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm ${STATUS_COLORS[project.status as ProjectStatus]}`}
-        >
-          {STATUS_LABELS[project.status as ProjectStatus]}
-        </span>
+      <div className="relative h-[4.5rem] w-[6.5rem] shrink-0 overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50 sm:h-20 sm:w-[7.5rem]">
+        <ProjectThumbnail
+          src={project.thumbnail}
+          alt={project.title}
+          className="object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+        />
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="mb-1.5 line-clamp-1 text-[15px] font-medium text-zinc-900 group-hover:text-brand-700">
-          {project.title}
-        </h3>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="mb-1.5 flex items-start justify-between gap-2">
+          <h3 className="line-clamp-1 text-[15px] font-medium text-zinc-900 group-hover:text-brand-700">
+            {project.title}
+          </h3>
+          <span
+            className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[project.status as ProjectStatus]}`}
+          >
+            {STATUS_LABELS[project.status as ProjectStatus]}
+          </span>
+        </div>
 
-        <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-zinc-500">
+        <p className="mb-2 line-clamp-2 text-sm leading-relaxed text-zinc-500">
           {project.description || "설명 없음"}
         </p>
 
         <CommentTicker comments={comments} />
 
-        <div className="mt-auto space-y-3 pt-1">
+        <div className="mt-auto space-y-2.5 pt-2">
           <div className="flex items-center gap-2">
             <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-100">
               <div
@@ -45,22 +51,22 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
                 style={{ width: `${project.progress}%` }}
               />
             </div>
-            <span className="text-xs tabular-nums text-zinc-400">{project.progress}%</span>
+            <span className="text-[11px] tabular-nums text-zinc-400">{project.progress}%</span>
           </div>
 
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {tags.slice(0, 3).map((tag) => (
-                <span key={tag} className="text-[11px] text-zinc-400">
-                  #{tag}
-                </span>
-              ))}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px] text-zinc-400">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="truncate">{project.author}</span>
+              {tags.length > 0 && (
+                <>
+                  <span className="text-zinc-200">·</span>
+                  <span className="truncate">
+                    {tags.slice(0, 2).map((tag) => `#${tag}`).join(" ")}
+                  </span>
+                </>
+              )}
             </div>
-          )}
-
-          <div className="flex items-center justify-between border-t border-zinc-100 pt-3 text-xs text-zinc-400">
-            <span>{project.author}</span>
-            <span>{formatDate(project.updated_at)}</span>
+            <span className="shrink-0">{formatDate(project.updated_at)}</span>
           </div>
         </div>
       </div>

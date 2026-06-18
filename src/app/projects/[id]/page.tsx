@@ -43,63 +43,69 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <article className="card overflow-hidden">
-            <div className="relative aspect-[16/9] w-full bg-zinc-100">
-              <ProjectThumbnail src={project.thumbnail} alt={project.title} />
-            </div>
-
             <div className="p-6 sm:p-8">
-              <div className="mb-5 flex flex-wrap items-center gap-3">
-                <span className={`badge border ${STATUS_COLORS[project.status as ProjectStatus]}`}>
-                  {STATUS_LABELS[project.status as ProjectStatus]}
-                </span>
-                <span className="text-sm tabular-nums text-zinc-400">{project.progress}%</span>
-              </div>
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                <div className="relative mx-auto h-28 w-44 shrink-0 overflow-hidden rounded-xl border border-zinc-100 bg-zinc-50 sm:mx-0 sm:h-32 sm:w-48">
+                  <ProjectThumbnail src={project.thumbnail} alt={project.title} className="object-cover object-top" />
+                </div>
 
-              <h1 className="mb-4 text-2xl font-semibold tracking-tight text-zinc-900">
-                {project.title}
-              </h1>
-
-              <p className="mb-6 whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
-                {project.description || "설명이 없습니다."}
-              </p>
-
-              {tags.length > 0 && (
-                <div className="mb-6 flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <span key={tag} className="text-xs text-zinc-400">
-                      #{tag}
+                <div className="min-w-0 flex-1">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className={`badge border ${STATUS_COLORS[project.status as ProjectStatus]}`}>
+                      {STATUS_LABELS[project.status as ProjectStatus]}
                     </span>
-                  ))}
-                </div>
-              )}
+                    <span className="text-sm tabular-nums text-zinc-400">{project.progress}%</span>
+                  </div>
 
-              <div className="mb-6 h-1 overflow-hidden rounded-full bg-zinc-100">
-                <div
-                  className="h-full rounded-full bg-brand-500"
-                  style={{ width: `${project.progress}%` }}
-                />
-              </div>
+                  <h1 className="mb-3 text-2xl font-semibold tracking-tight text-zinc-900">
+                    {project.title}
+                  </h1>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-400">
-                <span>{project.author}</span>
-                <span>등록 {formatDate(project.created_at)}</span>
-                <span>수정 {formatDate(project.updated_at)}</span>
-              </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-400">
+                    <span>{project.author}</span>
+                    <span>등록 {formatDate(project.created_at)}</span>
+                    <span>수정 {formatDate(project.updated_at)}</span>
+                  </div>
 
-              {(project.repo_url || project.demo_url) && (
-                <div className="mt-6 flex flex-wrap gap-2 border-t border-zinc-100 pt-6">
-                  {project.demo_url && (
-                    <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="btn-primary text-xs">
-                      데모 보기
-                    </a>
-                  )}
-                  {project.repo_url && (
-                    <a href={project.repo_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs">
-                      저장소
-                    </a>
+                  {(project.repo_url || project.demo_url) && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {project.demo_url && (
+                        <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="btn-primary text-xs">
+                          데모 보기
+                        </a>
+                      )}
+                      {project.repo_url && (
+                        <a href={project.repo_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs">
+                          저장소
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
+
+              <div className="mt-6 border-t border-zinc-100 pt-6">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+                  {project.description || "설명이 없습니다."}
+                </p>
+
+                {tags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <span key={tag} className="text-xs text-zinc-400">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-100">
+                  <div
+                    className="h-full rounded-full bg-brand-500"
+                    style={{ width: `${project.progress}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </article>
 
