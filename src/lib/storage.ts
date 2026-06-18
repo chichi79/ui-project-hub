@@ -1,37 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { put } from "@vercel/blob";
+import { compressImageForStorage, DATA_URL_TARGET_BYTES } from "./image-compress";
+import { uploadToFirebaseStorage } from "./firebase-storage";
 
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
 
-export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
-  const filename = `capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(filename, buffer, {
-      access: "public",
-      contentType: mimeForExt(ext),
-    });
-    return blob.url;
-  }
-
-  // Vercel serverless: writable filesystem 없음 → 작은 이미지는 data URL로 저장
-  if (process.env.VERCEL) {
-    const maxDataUrlBytes = 100_000;
-    if (buffer.length > maxDataUrlBytes) {
-      throw new Error(
-        "이미지가 너무 큽니다. Vercel 대시보드에서 Blob Storage를 연결하거나, 100KB 이하 이미지를 사용해 주세요."
-      );
-    }
-    const mime = mimeForExt(ext);
-    return `data:${mime};base64,${buffer.toString("base64")}`;
-  }
-
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-  fs.writeFileSync(path.join(uploadsDir, filename), buffer);
-  return `/uploads/${filename}`;
+function makeFilename(ext: string): string {
+  return `capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 }
 
 function mimeForExt(ext: string): string {
@@ -40,6 +16,45 @@ function mimeForExt(ext: string): string {
   if (ext === "gif") return "image/gif";
   if (ext === "webp") return "image/webp";
   return "image/jpeg";
+}
+
+export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
+  let filename = makeFilename(ext);
+  let contentType = mimeForExt(ext);
+  let uploadBuffer = buffer;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(filename, uploadBuffer, {
+      access: "public",
+      contentType,
+    });
+    return blob.url;
+  }
+
+  const firebaseUrl = await uploadToFirebaseStorage(uploadBuffer, filename, contentType);
+  if (firebaseUrl) return firebaseUrl;
+
+  if (process.env.VERCEL || uploadBuffer.length > DATA_URL_TARGET_BYTES) {
+    const compressed = await compressImageForStorage(uploadBuffer);
+    uploadBuffer = compressed.buffer;
+    contentType = compressed.contentType;
+    filename = makeFilename(compressed.ext);
+  }
+
+  if (process.env.VERCEL) {
+    if (uploadBuffer.length > DATA_URL_TARGET_BYTES) {
+      throw new Error(
+        "이미지를 저장할 수 없습니다. Firebase Console에서 Storage를 활성화하거나 Vercel Blob Storage를 연결해 주세요."
+      );
+    }
+    return `data:${contentType};base64,${uploadBuffer.toString("base64")}`;
+  }
+
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  fs.writeFileSync(path.join(uploadsDir, filename), uploadBuffer);
+  return `/uploads/${filename}`;
 }
 
 export async function saveUploadedFile(file: File): Promise<string> {

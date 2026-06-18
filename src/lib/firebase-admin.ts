@@ -56,6 +56,10 @@ function initFirebase(): App {
   );
 }
 
+export function getFirebaseApp(): App {
+  return initFirebase();
+}
+
 export function getFirestoreDb(): Firestore {
   const databaseId = process.env.FIRESTORE_DATABASE_ID;
   return databaseId

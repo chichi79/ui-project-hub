@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 import { resolveImageMime } from "@/lib/image-mime";
 import { saveImageBuffer } from "@/lib/storage";
 
 const MAX_SIZE = 5 * 1024 * 1024;
+
+export const runtime = "nodejs";
+export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,18 +24,31 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const mime = resolveImageMime(file, bytes);
+    const buffer = Buffer.from(bytes);
+    let mime = resolveImageMime(file, bytes);
+
     if (!mime) {
-      return NextResponse.json(
-        { error: "JPG, PNG, WebP, GIF만 업로드 가능합니다." },
-        { status: 400 }
-      );
+      try {
+        const meta = await sharp(buffer).metadata();
+        if (!meta.format) {
+          return NextResponse.json(
+            { error: "JPG, PNG, WebP, GIF만 업로드 가능합니다." },
+            { status: 400 }
+          );
+        }
+        mime = "image/jpeg";
+      } catch {
+        return NextResponse.json(
+          { error: "JPG, PNG, WebP, GIF만 업로드 가능합니다." },
+          { status: 400 }
+        );
+      }
     }
 
     const ext =
       file.name.split(".").pop()?.toLowerCase() ||
       mime.replace("image/", "").replace("jpeg", "jpg");
-    const url = await saveImageBuffer(Buffer.from(bytes), ext);
+    const url = await saveImageBuffer(buffer, ext);
     return NextResponse.json({ url });
   } catch (err) {
     console.error("Upload failed:", err);

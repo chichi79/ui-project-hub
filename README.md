@@ -50,7 +50,8 @@ service cloud.firestore {
 2. [Vercel](https://vercel.com) → GitHub 저장소 Import
 3. **Environment Variables** 추가:
    - `FIREBASE_SERVICE_ACCOUNT_KEY` — 서비스 계정 JSON (한 줄)
-   - `BLOB_READ_WRITE_TOKEN` — **(프로덕션 이미지 업로드 필수)** Vercel 대시보드 → Storage → Blob 생성 후 프로젝트에 연결
+   - `BLOB_READ_WRITE_TOKEN` — (권장) Vercel Blob Storage 연결 시
+   - Firebase Storage — Blob 없을 때 이미지 저장용. [Firebase Console → Storage](https://console.firebase.google.com)에서 **시작하기**로 버킷 생성 (기본 버킷이면 추가 env 불필요)
    - `NEXT_PUBLIC_SITE_URL` — (권장) `https://ui-project-hub.vercel.app` 등 공유 미리보기용 도메인
 4. Deploy
 
