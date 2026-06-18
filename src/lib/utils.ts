@@ -32,14 +32,19 @@ export const STATUS_DOT_COLORS: Record<ProjectStatus, string> = {
   on_hold: "bg-rose-400",
 };
 
+const DISPLAY_TIME_ZONE = "Asia/Seoul";
+
 export function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("ko-KR", {
+  if (Number.isNaN(d.getTime())) return dateStr;
+
+  return d.toLocaleString("ko-KR", {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: DISPLAY_TIME_ZONE,
   });
 }
 

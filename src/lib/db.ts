@@ -31,6 +31,20 @@ function toPublic(project: ProjectRecord): Project {
   return rest;
 }
 
+function normalizeTimestamp(value: unknown): string {
+  if (!value) return now();
+  if (typeof value === "string") return value;
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toDate" in value &&
+    typeof (value as { toDate: () => Date }).toDate === "function"
+  ) {
+    return (value as { toDate: () => Date }).toDate().toISOString();
+  }
+  return String(value);
+}
+
 function docToProject(id: number, data: DocumentData): ProjectRecord {
   return {
     id,
@@ -44,8 +58,8 @@ function docToProject(id: number, data: DocumentData): ProjectRecord {
     tags: data.tags ?? "",
     thumbnail: data.thumbnail ?? null,
     password_hash: data.password_hash ?? "",
-    created_at: data.created_at,
-    updated_at: data.updated_at,
+    created_at: normalizeTimestamp(data.created_at),
+    updated_at: normalizeTimestamp(data.updated_at),
   };
 }
 
@@ -58,7 +72,7 @@ function docToComment(id: number, data: DocumentData): Comment {
     type: (data.type || "idea") as FeedbackType,
     status: (data.status || "unread") as FeedbackStatus,
     parent_id: data.parent_id ?? null,
-    created_at: data.created_at,
+    created_at: normalizeTimestamp(data.created_at),
   };
 }
 
@@ -70,7 +84,7 @@ function docToProgress(id: number, data: DocumentData): ProgressUpdate {
     status: data.status as ProjectStatus,
     progress: data.progress,
     note: data.note ?? "",
-    created_at: data.created_at,
+    created_at: normalizeTimestamp(data.created_at),
   };
 }
 

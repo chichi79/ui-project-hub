@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getUserName } from "@/lib/user";
 
 interface AuthorInputProps {
@@ -14,12 +14,7 @@ export default function AuthorInput({
   className = "input-field",
   placeholder = "이름",
 }: AuthorInputProps) {
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    const saved = getUserName();
-    if (saved) setValue(saved);
-  }, []);
+  const [value, setValue] = useState(() => getUserName());
 
   return (
     <input

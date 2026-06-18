@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createProject, getAllProjects, getProjectStats } from "@/lib/db";
+import { after } from "next/server";
+import { createProject, getAllProjects, getProjectStats, updateProject } from "@/lib/db";
 import { hashPassword, validatePasswordInput } from "@/lib/auth";
 import { generateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
@@ -29,18 +30,8 @@ export async function POST(request: NextRequest) {
 
     const demoUrl = normalizeUrl(body.demo_url || "");
     const repoUrl = normalizeUrl(body.repo_url || "");
-    let thumbnail = body.thumbnail?.trim() || null;
-
-    if (!thumbnail) {
-      const siteUrl = pickSiteUrl(demoUrl, repoUrl);
-      if (siteUrl) {
-        try {
-          thumbnail = await generateProjectThumbnail(siteUrl);
-        } catch (thumbErr) {
-          console.warn("썸네일 생성 실패, 기본 이미지 사용:", thumbErr);
-        }
-      }
-    }
+    const thumbnail = body.thumbnail?.trim() || null;
+    const siteUrl = !thumbnail ? pickSiteUrl(demoUrl, repoUrl) : "";
 
     const project = await createProject({
       title: body.title.trim(),
@@ -54,6 +45,17 @@ export async function POST(request: NextRequest) {
       thumbnail: thumbnail || undefined,
       password_hash: hashPassword(body.password),
     });
+
+    if (!thumbnail && siteUrl) {
+      after(async () => {
+        try {
+          const generated = await generateProjectThumbnail(siteUrl);
+          await updateProject(project.id, { thumbnail: generated });
+        } catch (thumbErr) {
+          console.warn("썸네일 생성 실패:", thumbErr);
+        }
+      });
+    }
 
     return NextResponse.json(project, { status: 201 });
   } catch (err) {
