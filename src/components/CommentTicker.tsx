@@ -36,13 +36,13 @@ export default function CommentTicker({ comments }: CommentTickerProps) {
         {FEEDBACK_TYPE_LABELS[comment.type]}
       </span>
       <p
-        className={`line-clamp-2 text-xs leading-relaxed text-zinc-500 transition-all duration-300 ${
-          visible ? "translate-y-0 opacity-100" : "-translate-y-0.5 opacity-0"
+        className={`h-5 truncate text-xs leading-5 text-zinc-500 transition-opacity duration-300 ${
+          visible ? "opacity-100" : "opacity-0"
         }`}
       >
         <span className="font-medium text-zinc-600">{comment.author}</span>
         <span className="mx-1 text-zinc-300">—</span>
-        {comment.content}
+        {comment.content.replace(/\s+/g, " ")}
       </p>
     </div>
   );
