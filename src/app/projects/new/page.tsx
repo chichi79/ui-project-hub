@@ -23,7 +23,6 @@ export default function NewProjectPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
     const form = new FormData(e.currentTarget);
@@ -50,12 +49,13 @@ export default function NewProjectPage() {
         const captured = await captureUrlThumbnail(siteUrl);
         if (captured) finalThumbnail = captured;
       } catch {
-        // 캡처 실패 시 서버에서 기본 처리
+        // 캡처 실패 시 서버에서 SVG 썸네일 생성
       } finally {
         setCapturing(false);
       }
     }
 
+    setLoading(true);
     const body = {
       title: form.get("title") as string,
       description: form.get("description") as string,
