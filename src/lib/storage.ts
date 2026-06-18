@@ -36,48 +36,18 @@ async function saveToVercelBlob(
     );
   }
 
-  // SDK의 ReadableStream 변환이 서버리스 환경에서 hang되는 경우가 있어
-  // Vercel Blob REST API를 직접 fetch로 호출합니다.
+  const { put } = await import("@vercel/blob");
   const suffix = `-${Math.random().toString(36).slice(2, 8)}`;
   const nameWithSuffix = filename.replace(/(\.[^.]+)$/, `${suffix}$1`);
-  const blobPath = `/uploads/${nameWithSuffix}`;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20_000);
-
-  try {
-    const bodyBytes = new Uint8Array(buffer);
-    const res = await fetch(`https://blob.vercel-storage.com${blobPath}`, {
-      method: "PUT",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-api-version": "9",
-        "x-content-type": contentType,
-        // 서버(Node.js)에서 content-length 없으면 Vercel Blob이 무한 대기함
-        "x-content-length": String(bodyBytes.byteLength),
-      },
-      body: bodyBytes,
-      signal: controller.signal,
-    });
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      throw new Error(
-        `Blob 업로드 실패 (${res.status})${errText ? `: ${errText.slice(0, 120)}` : ""}`
-      );
-    }
-
-    const data = (await res.json()) as { url: string };
-    if (!data.url) throw new Error("Blob URL을 받지 못했습니다.");
-    return data.url;
-  } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
-      throw new Error("Blob 업로드 타임아웃. 잠시 후 다시 시도해 주세요.");
-    }
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
+  const blob = await put(`uploads/${nameWithSuffix}`, buffer, {
+    access: "public",
+    contentType,
+    token,
+    addRandomSuffix: false,
+    abortSignal: AbortSignal.timeout(25_000),
+  });
+  return blob.url;
 }
 
 export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
