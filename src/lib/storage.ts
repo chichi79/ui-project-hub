@@ -40,14 +40,14 @@ async function saveToVercelBlob(
   // Vercel Blob REST API를 직접 fetch로 호출합니다.
   const suffix = `-${Math.random().toString(36).slice(2, 8)}`;
   const nameWithSuffix = filename.replace(/(\.[^.]+)$/, `${suffix}$1`);
-  const params = new URLSearchParams({ pathname: `uploads/${nameWithSuffix}` });
+  const blobPath = `/uploads/${nameWithSuffix}`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20_000);
 
   try {
     const bodyBytes = new Uint8Array(buffer);
-    const res = await fetch(`https://blob.vercel-storage.com/?${params}`, {
+    const res = await fetch(`https://blob.vercel-storage.com${blobPath}`, {
       method: "PUT",
       headers: {
         authorization: `Bearer ${token}`,
