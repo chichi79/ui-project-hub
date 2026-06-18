@@ -68,6 +68,7 @@ export default function NewProjectPage() {
       }
       const project = await res.json();
       router.replace(`/?registered=${project.id}`);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "등록 실패");
       setLoading(false);

@@ -17,6 +17,11 @@ const COUNTERS = "meta/counters";
 
 let seedReady: Promise<void> | null = null;
 
+function shouldSeedSampleData(): boolean {
+  if (process.env.VERCEL_ENV === "production") return false;
+  return process.env.SEED_SAMPLE_DATA === "true";
+}
+
 function now(): string {
   return new Date().toISOString();
 }
@@ -91,6 +96,8 @@ async function ensureSeed() {
 }
 
 async function seedIfEmpty() {
+  if (!shouldSeedSampleData()) return;
+
   const db = getFirestoreDb();
   let existing;
   try {

@@ -1,20 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function RegisteredNotice() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const registeredId = searchParams.get("registered");
+  const [dismissed, setDismissed] = useState(false);
 
-  if (!registeredId) return null;
+  if (!registeredId || dismissed) return null;
 
   function dismiss() {
+    setDismissed(true);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("registered");
     const query = params.toString();
-    router.replace(query ? `/?${query}` : "/");
+    const url = query ? `/?${query}` : "/";
+    window.history.replaceState(window.history.state, "", url);
   }
 
   return (
