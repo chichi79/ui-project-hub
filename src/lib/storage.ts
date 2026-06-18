@@ -5,6 +5,10 @@ import { uploadToFirebaseStorage } from "./firebase-storage";
 
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
 
+function getBlobToken(): string | undefined {
+  return process.env.BLOB_READ_WRITE_TOKEN?.trim() || undefined;
+}
+
 function makeFilename(ext: string): string {
   return `capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 }
@@ -17,12 +21,34 @@ function mimeForExt(ext: string): string {
   return "image/jpeg";
 }
 
+async function saveToVercelBlob(
+  filename: string,
+  buffer: Buffer,
+  contentType: string
+): Promise<string> {
+  const token = getBlobToken();
+  if (!token) {
+    throw new Error("Blob Storage 토큰이 없습니다.");
+  }
+
+  const { put } = await import("@vercel/blob");
+  const blob = await put(filename, buffer, {
+    access: "public",
+    contentType,
+    token,
+    addRandomSuffix: false,
+  });
+  return blob.url;
+}
+
 export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
   let uploadBuffer = buffer;
   let contentType = mimeForExt(ext);
   let uploadExt = ext;
 
-  if (process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+  const blobToken = getBlobToken();
+
+  if (process.env.VERCEL && !blobToken) {
     const compressed = await compressImageForStorage(buffer);
     uploadBuffer = compressed.buffer;
     contentType = compressed.contentType;
@@ -31,13 +57,8 @@ export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<stri
 
   const filename = makeFilename(uploadExt);
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const { put } = await import("@vercel/blob");
-    const blob = await put(filename, uploadBuffer, {
-      access: "public",
-      contentType,
-    });
-    return blob.url;
+  if (blobToken) {
+    return saveToVercelBlob(filename, uploadBuffer, contentType);
   }
 
   const firebaseUrl = await uploadToFirebaseStorage(uploadBuffer, filename, contentType);
@@ -51,9 +72,7 @@ export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<stri
 
   if (process.env.VERCEL) {
     if (uploadBuffer.length > DATA_URL_TARGET_BYTES) {
-      throw new Error(
-        "이미지를 저장할 수 없습니다. Vercel Blob Storage를 연결하거나 FIREBASE_STORAGE_BUCKET을 설정해 주세요."
-      );
+      throw new Error("이미지를 저장할 수 없습니다. 잠시 후 다시 시도해 주세요.");
     }
     return `data:${contentType};base64,${uploadBuffer.toString("base64")}`;
   }
