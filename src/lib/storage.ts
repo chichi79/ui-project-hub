@@ -46,14 +46,17 @@ async function saveToVercelBlob(
   const timer = setTimeout(() => controller.abort(), 20_000);
 
   try {
+    const bodyBytes = new Uint8Array(buffer);
     const res = await fetch(`https://blob.vercel-storage.com/?${params}`, {
       method: "PUT",
       headers: {
         authorization: `Bearer ${token}`,
         "x-api-version": "9",
         "x-content-type": contentType,
+        // 서버(Node.js)에서 content-length 없으면 Vercel Blob이 무한 대기함
+        "x-content-length": String(bodyBytes.byteLength),
       },
-      body: new Uint8Array(buffer),
+      body: bodyBytes,
       signal: controller.signal,
     });
 
