@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteProject, getProjectRecordById } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -30,6 +31,7 @@ async function verifyAndDelete(projectId: number, password: string) {
   }
 
   await deleteProject(projectId);
+  revalidateProjectPages(projectId);
   return NextResponse.json({ success: true });
 }
 

@@ -3,6 +3,7 @@ import { getProjectRecordById, updateProject } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
 import { regenerateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -37,6 +38,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!project) {
       return NextResponse.json({ error: "프로젝트를 찾을 수 없습니다." }, { status: 404 });
     }
+
+    revalidateProjectPages(projectId);
 
     return NextResponse.json(project);
   } catch (err) {

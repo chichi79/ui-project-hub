@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Comment, Project, ProjectStatus } from "@/lib/types";
-import { STATUS_COLORS, STATUS_LABELS, formatDate, normalizeUrl, parseTags } from "@/lib/utils";
+import { STATUS_COLORS, STATUS_LABELS, normalizeUrl, parseTags } from "@/lib/utils";
 import CommentTicker from "@/components/CommentTicker";
+import FormattedDate from "@/components/FormattedDate";
 import ProjectThumbnail from "@/components/ProjectThumbnail";
 
 interface ProjectCardProps {
@@ -79,7 +80,7 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
                 </>
               )}
             </div>
-            <span className="shrink-0">{formatDate(project.updated_at)}</span>
+            <FormattedDate value={project.created_at} className="shrink-0" />
           </div>
         </div>
       </Link>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addComment, getProjectById } from "@/lib/db";
 import { isFeedbackType } from "@/lib/feedback";
 import type { FeedbackType } from "@/lib/types";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       type,
       parent_id: parentId,
     });
+    revalidateProjectPages(projectId);
     return NextResponse.json(comment, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "의견 등록 실패";

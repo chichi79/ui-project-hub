@@ -1,6 +1,7 @@
 import type { Comment, FeedbackStatus, FeedbackType, ProgressUpdate, Project, ProjectStatus } from "./types";
 import { isFeedbackType } from "./feedback";
 import { verifyPassword, hashPassword, DEFAULT_PROJECT_PASSWORD } from "./auth";
+import { parseStoredDate } from "./utils";
 import type { DocumentData } from "firebase-admin/firestore";
 import { firestoreSetupError, getFirestoreDb, isFirestoreNotFoundError } from "./firebase-admin";
 
@@ -33,7 +34,10 @@ function toPublic(project: ProjectRecord): Project {
 
 function normalizeTimestamp(value: unknown): string {
   if (!value) return now();
-  if (typeof value === "string") return value;
+  if (typeof value === "string") {
+    const parsed = parseStoredDate(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+  }
   if (
     typeof value === "object" &&
     value !== null &&

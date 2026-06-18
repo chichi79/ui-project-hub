@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProjectById, updateCommentStatus } from "@/lib/db";
 import { isFeedbackStatus } from "@/lib/feedback";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string; commentId: string }> };
 
@@ -26,6 +27,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     if (!updated) {
       return NextResponse.json({ error: "의견을 찾을 수 없습니다." }, { status: 404 });
     }
+
+    revalidateProjectPages(projectId);
 
     return NextResponse.json(updated);
   } catch (err) {

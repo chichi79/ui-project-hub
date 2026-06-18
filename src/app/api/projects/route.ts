@@ -5,6 +5,7 @@ import { hashPassword, validatePasswordInput } from "@/lib/auth";
 import { generateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
 import { normalizeUrl } from "@/lib/utils";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 export async function GET(request: NextRequest) {
   const status = request.nextUrl.searchParams.get("status") || undefined;
@@ -51,11 +52,14 @@ export async function POST(request: NextRequest) {
         try {
           const generated = await generateProjectThumbnail(siteUrl);
           await updateProject(project.id, { thumbnail: generated });
+          revalidateProjectPages(project.id);
         } catch (thumbErr) {
           console.warn("썸네일 생성 실패:", thumbErr);
         }
       });
     }
+
+    revalidateProjectPages(project.id);
 
     return NextResponse.json(project, { status: 201 });
   } catch (err) {

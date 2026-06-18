@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addProgressUpdate, getProjectRecordById } from "@/lib/db";
 import type { ProjectStatus } from "@/lib/types";
 import { verifyPassword } from "@/lib/auth";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       progress,
       note: body.note?.trim() || "",
     });
+    revalidateProjectPages(projectId);
     return NextResponse.json(update, { status: 201 });
   } catch {
     return NextResponse.json({ error: "진행상황 업데이트 실패" }, { status: 500 });

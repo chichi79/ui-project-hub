@@ -34,8 +34,27 @@ export const STATUS_DOT_COLORS: Record<ProjectStatus, string> = {
 
 const DISPLAY_TIME_ZONE = "Asia/Seoul";
 
+/** Firestore/legacy 문자열을 일관되게 파싱 */
+export function parseStoredDate(dateStr: string): Date {
+  const trimmed = dateStr.trim();
+  if (!trimmed) return new Date(NaN);
+
+  if (/[zZ]$/.test(trimmed) || /[+-]\d{2}:\d{2}$/.test(trimmed)) {
+    return new Date(trimmed);
+  }
+
+  const match = trimmed.match(
+    /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)/
+  );
+  if (match) {
+    return new Date(`${match[1]}T${match[2]}+09:00`);
+  }
+
+  return new Date(trimmed);
+}
+
 export function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = parseStoredDate(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
 
   return d.toLocaleString("ko-KR", {

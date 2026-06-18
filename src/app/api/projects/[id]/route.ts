@@ -11,6 +11,7 @@ import { verifyPassword } from "@/lib/auth";
 import { generateProjectThumbnail, regenerateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
 import { normalizeUrl } from "@/lib/utils";
+import { revalidateProjectPages } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -65,6 +66,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       thumbnail: thumbnail ?? undefined,
     });
 
+    revalidateProjectPages(projectId);
+
     return NextResponse.json(project);
   } catch (err) {
     console.error("프로젝트 수정 실패:", err);
@@ -108,5 +111,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   }
 
   await deleteProject(projectId);
+  revalidateProjectPages(projectId);
   return NextResponse.json({ success: true });
 }
