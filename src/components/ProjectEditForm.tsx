@@ -51,7 +51,11 @@ export default function ProjectEditForm({ project, password, onCancel, onSaved }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
+      const text = await res.text();
+      if (text.trimStart().startsWith("<")) {
+        throw new Error("서버 오류가 발생했습니다. 썸네일이 너무 크면 더 작은 이미지를 사용해 주세요.");
+      }
+      const data = JSON.parse(text) as { error?: string } & Project;
       if (!res.ok) throw new Error(data.error || "수정 실패");
       onSaved(data);
       onCancel();

@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { put } from "@vercel/blob";
 import { compressImageForStorage, DATA_URL_TARGET_BYTES } from "./image-compress";
 import { uploadToFirebaseStorage } from "./firebase-storage";
 
@@ -19,11 +18,21 @@ function mimeForExt(ext: string): string {
 }
 
 export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
-  let filename = makeFilename(ext);
-  let contentType = mimeForExt(ext);
   let uploadBuffer = buffer;
+  let contentType = mimeForExt(ext);
+  let uploadExt = ext;
+
+  if (process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+    const compressed = await compressImageForStorage(buffer);
+    uploadBuffer = compressed.buffer;
+    contentType = compressed.contentType;
+    uploadExt = compressed.ext;
+  }
+
+  const filename = makeFilename(uploadExt);
 
   if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { put } = await import("@vercel/blob");
     const blob = await put(filename, uploadBuffer, {
       access: "public",
       contentType,
@@ -34,17 +43,16 @@ export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<stri
   const firebaseUrl = await uploadToFirebaseStorage(uploadBuffer, filename, contentType);
   if (firebaseUrl) return firebaseUrl;
 
-  if (process.env.VERCEL || uploadBuffer.length > DATA_URL_TARGET_BYTES) {
+  if (!process.env.VERCEL && uploadBuffer.length > DATA_URL_TARGET_BYTES) {
     const compressed = await compressImageForStorage(uploadBuffer);
     uploadBuffer = compressed.buffer;
     contentType = compressed.contentType;
-    filename = makeFilename(compressed.ext);
   }
 
   if (process.env.VERCEL) {
     if (uploadBuffer.length > DATA_URL_TARGET_BYTES) {
       throw new Error(
-        "이미지를 저장할 수 없습니다. Firebase Console에서 Storage를 활성화하거나 Vercel Blob Storage를 연결해 주세요."
+        "이미지를 저장할 수 없습니다. Vercel Blob Storage를 연결하거나 FIREBASE_STORAGE_BUCKET을 설정해 주세요."
       );
     }
     return `data:${contentType};base64,${uploadBuffer.toString("base64")}`;

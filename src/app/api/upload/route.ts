@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
 import { resolveImageMime } from "@/lib/image-mime";
 import { saveImageBuffer } from "@/lib/storage";
 
@@ -7,6 +6,7 @@ const MAX_SIZE = 5 * 1024 * 1024;
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
 
     if (!mime) {
       try {
+        const sharp = (await import("sharp")).default;
         const meta = await sharp(buffer).metadata();
         if (!meta.format) {
           return NextResponse.json(
