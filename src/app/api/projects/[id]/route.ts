@@ -12,6 +12,7 @@ import { generateProjectThumbnail, regenerateProjectThumbnail } from "@/lib/thum
 import { pickSiteUrl } from "@/lib/url";
 import { normalizeUrl } from "@/lib/utils";
 import { revalidateProjectPages } from "@/lib/revalidate";
+import { sanitizeThumbnailForSave } from "@/lib/thumbnail-display";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -55,7 +56,14 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     let thumbnail = existing.thumbnail;
     if (bodyThumbnail?.trim()) {
-      thumbnail = bodyThumbnail.trim();
+      const sanitized = sanitizeThumbnailForSave(bodyThumbnail);
+      if (!sanitized) {
+        return NextResponse.json(
+          { error: "유효하지 않은 썸네일입니다. 이미지를 다시 업로드해 주세요." },
+          { status: 400 }
+        );
+      }
+      thumbnail = sanitized;
     } else if (bodyThumbnail === "") {
       const siteUrl = pickSiteUrl(demoUrl, repoUrl);
       thumbnail = siteUrl ? await regenerateProjectThumbnail(siteUrl) : null;

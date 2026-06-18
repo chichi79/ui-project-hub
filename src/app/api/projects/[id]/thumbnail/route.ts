@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProjectRecordById, updateProject } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
-import { regenerateProjectThumbnail } from "@/lib/thumbnail";
+import { regenerateProjectThumbnail, generateUrlThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
 import { revalidateProjectPages } from "@/lib/revalidate";
 
@@ -32,7 +32,14 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
-    const thumbnail = await regenerateProjectThumbnail(siteUrl);
+    let thumbnail: string;
+    try {
+      thumbnail = await regenerateProjectThumbnail(siteUrl);
+    } catch (captureError) {
+      console.error("썸네일 캡처 실패, URL 미리보기로 대체:", captureError);
+      thumbnail = await generateUrlThumbnail(siteUrl);
+    }
+
     const project = await updateProject(projectId, { thumbnail });
 
     if (!project) {

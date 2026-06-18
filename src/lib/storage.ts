@@ -28,17 +28,17 @@ async function saveToVercelBlob(
   buffer: Buffer,
   contentType: string
 ): Promise<string> {
-  const token = getBlobToken();
-  if (!token) {
-    throw new Error("Blob Storage 토큰이 없습니다.");
+  if (!getBlobToken()) {
+    throw new Error(
+      "Blob Storage 토큰이 없습니다. Vercel 환경 변수를 확인한 뒤 재배포해 주세요."
+    );
   }
 
   const { put } = await import("@vercel/blob");
-  const blob = await put(filename, buffer, {
+  const blob = await put(`uploads/${filename}`, buffer, {
     access: "public",
     contentType,
-    token,
-    addRandomSuffix: false,
+    addRandomSuffix: true,
   });
   return blob.url;
 }

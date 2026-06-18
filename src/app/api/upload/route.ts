@@ -9,6 +9,15 @@ export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  const contentType = request.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return NextResponse.json(
+      { error: "페이지를 새로고침한 뒤 다시 업로드해 주세요." },
+      { status: 400 }
+    );
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;

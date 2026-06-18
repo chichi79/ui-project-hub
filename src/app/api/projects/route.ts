@@ -6,6 +6,7 @@ import { generateProjectThumbnail } from "@/lib/thumbnail";
 import { pickSiteUrl } from "@/lib/url";
 import { normalizeUrl } from "@/lib/utils";
 import { revalidateProjectPages } from "@/lib/revalidate";
+import { sanitizeThumbnailForSave } from "@/lib/thumbnail-display";
 
 export async function GET(request: NextRequest) {
   const status = request.nextUrl.searchParams.get("status") || undefined;
@@ -31,7 +32,14 @@ export async function POST(request: NextRequest) {
 
     const demoUrl = normalizeUrl(body.demo_url || "");
     const repoUrl = normalizeUrl(body.repo_url || "");
-    const thumbnail = body.thumbnail?.trim() || null;
+    const rawThumbnail = body.thumbnail?.trim() || null;
+    const thumbnail = rawThumbnail ? sanitizeThumbnailForSave(rawThumbnail) : null;
+    if (rawThumbnail && !thumbnail) {
+      return NextResponse.json(
+        { error: "유효하지 않은 썸네일입니다. 이미지를 다시 업로드해 주세요." },
+        { status: 400 }
+      );
+    }
     const siteUrl = !thumbnail ? pickSiteUrl(demoUrl, repoUrl) : "";
 
     const project = await createProject({
