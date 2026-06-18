@@ -87,10 +87,9 @@ async function uploadViaBlobDirect(file: File): Promise<string> {
 
   // @vercel/blob/client 은 undici 의존성으로 브라우저에서 오동작할 수 있어
   // Vercel Blob REST API를 직접 fetch로 호출합니다.
+  // CORS 문제를 줄이기 위해 필수 헤더만 전송합니다.
   const clientToken = data.clientToken as string;
   const blobPathname = (data.pathname as string) || pathname;
-  const [, , , storeId = ""] = clientToken.split("_");
-  const requestId = `${storeId}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
 
   const blobRes = await fetch(
     `https://blob.vercel-storage.com/?${new URLSearchParams({ pathname: blobPathname })}`,
@@ -100,8 +99,6 @@ async function uploadViaBlobDirect(file: File): Promise<string> {
         authorization: `Bearer ${clientToken}`,
         "x-api-version": "9",
         "x-content-type": file.type || "image/jpeg",
-        "x-api-blob-request-id": requestId,
-        "x-api-blob-request-attempt": "0",
       },
       body: file,
       signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),

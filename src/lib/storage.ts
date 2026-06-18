@@ -36,12 +36,19 @@ async function saveToVercelBlob(
   }
 
   const { put } = await import("@vercel/blob");
-  const blob = await put(`uploads/${filename}`, buffer, {
+  const uploadPromise = put(`uploads/${filename}`, buffer, {
     access: "public",
     contentType,
     token: getBlobToken(),
     addRandomSuffix: true,
   });
+
+  // Vercel 함수 maxDuration(30s) 이전에 명시적으로 타임아웃
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("Blob 업로드 타임아웃. 잠시 후 다시 시도해 주세요.")), 20_000)
+  );
+
+  const blob = await Promise.race([uploadPromise, timeoutPromise]);
   return blob.url;
 }
 
