@@ -28,7 +28,7 @@ export async function uploadToFirebaseStorage(
   contentType: string
 ): Promise<string | null> {
   const bucketName = process.env.FIREBASE_STORAGE_BUCKET?.trim();
-  if (process.env.VERCEL && !bucketName) {
+  if (!bucketName) {
     return null;
   }
 

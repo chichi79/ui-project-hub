@@ -37,9 +37,12 @@ function initFirebase(): App {
     ? normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY)
     : undefined;
 
+  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET?.trim() || undefined;
+
   if (projectId && clientEmail && privateKey) {
     app = initializeApp({
       credential: cert({ projectId, clientEmail, privateKey }),
+      ...(storageBucket && { storageBucket }),
     });
     return app;
   }
@@ -47,7 +50,10 @@ function initFirebase(): App {
   const jsonKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (jsonKey) {
     const serviceAccount = parseServiceAccountKey(jsonKey);
-    app = initializeApp({ credential: cert(serviceAccount) });
+    app = initializeApp({
+      credential: cert(serviceAccount),
+      ...(storageBucket && { storageBucket }),
+    });
     return app;
   }
 
