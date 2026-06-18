@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getAllProjects, getProjectStats, getRecentCommentsByProject } from "@/lib/db";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectStatsBoard from "@/components/ProjectStatsBoard";
-import StatusFilter from "@/components/StatusFilter";
 import RegisteredNotice from "@/components/RegisteredNotice";
 import { STATUS_LABELS } from "@/lib/utils";
 import type { ProjectStatus } from "@/lib/types";
@@ -38,24 +37,14 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="page-title">프로젝트</h1>
-        <p className="page-desc">UI 팀의 자체 프로젝트를 모아보고 의견을 나눕니다.</p>
-        <div className="mt-5">
-          <Suspense fallback={<div className="h-[72px] rounded-xl border border-zinc-200/80 bg-white" />}>
-            <ProjectStatsBoard items={statItems} />
-          </Suspense>
-        </div>
+        <Suspense fallback={<div className="h-14 rounded-xl border border-zinc-200/80 bg-white lg:h-16" />}>
+          <ProjectStatsBoard items={statItems} />
+        </Suspense>
       </div>
 
       <Suspense fallback={null}>
         <RegisteredNotice />
       </Suspense>
-
-      <div className="mb-8 border-b border-zinc-200">
-        <Suspense fallback={<div className="h-10" />}>
-          <StatusFilter />
-        </Suspense>
-      </div>
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">

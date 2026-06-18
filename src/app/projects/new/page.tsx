@@ -75,7 +75,7 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <div className="mb-8">
         <Link href="/" className="btn-ghost -ml-3 mb-4">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -87,11 +87,12 @@ export default function NewProjectPage() {
         <p className="page-desc">누구나 등록할 수 있습니다. 수정·삭제 시 비밀번호가 필요합니다.</p>
       </div>
 
-      <div className="mb-5 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-brand-900">
+      <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-brand-900">
         기본 수정 비밀번호는 <strong>{DEFAULT_PROJECT_PASSWORD}</strong>입니다. 등록 시 그대로 두거나 원하는 비밀번호로 변경할 수 있습니다.
       </div>
 
-      <form onSubmit={handleSubmit} className="card space-y-5 p-6 sm:p-8">
+      <div className="grid gap-8 lg:grid-cols-3">
+        <form onSubmit={handleSubmit} className="card space-y-5 p-6 sm:p-8 lg:col-span-2">
         {error && (
           <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
         )}
@@ -113,7 +114,7 @@ export default function NewProjectPage() {
           <Field label="작성자" required>
             <AuthorInput />
           </Field>
-          <Field label="상태" hint="아래 안내 참고">
+          <Field label="상태" hint="상태 안내 참고">
             <select name="status" defaultValue="idea" className="input-field">
               {STATUSES.map((s) => (
                 <option key={s} value={s}>{STATUS_LABELS[s]}</option>
@@ -122,9 +123,7 @@ export default function NewProjectPage() {
           </Field>
         </div>
 
-        <StatusGuide />
-
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-2">
           <Field label="수정 비밀번호" required hint={`기본값 ${DEFAULT_PROJECT_PASSWORD}`}>
             <input
               name="password"
@@ -151,7 +150,7 @@ export default function NewProjectPage() {
 
         <ProgressSlider value={progress} onChange={setProgress} />
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-2">
           <Field label="저장소 URL" hint="https:// 없이 입력 가능">
             <input name="repo_url" type="text" className="input-field" placeholder="github.com/..." />
           </Field>
@@ -172,7 +171,14 @@ export default function NewProjectPage() {
             {loading ? "등록 중..." : "등록하기"}
           </button>
         </div>
-      </form>
+        </form>
+
+        <aside className="lg:col-span-1">
+          <div className="lg:sticky lg:top-8">
+            <StatusGuide />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

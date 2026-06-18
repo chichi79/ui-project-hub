@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FeedbackType } from "@/lib/types";
 import { FEEDBACK_TYPE_LABELS, FEEDBACK_TYPES } from "@/lib/feedback";
-import { getUserName } from "@/lib/user";
+import { getUserName, setUserName } from "@/lib/user";
 
 interface CommentFormProps {
   projectId: number;
@@ -50,6 +50,8 @@ export default function CommentForm({
         body: JSON.stringify(body),
       });
       if (res.ok) {
+        const authorName = (form.get("author") as string).trim();
+        if (authorName) setUserName(authorName);
         (e.target as HTMLFormElement).reset();
         setAuthor(getUserName());
         router.refresh();

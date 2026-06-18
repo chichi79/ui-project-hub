@@ -1,18 +1,16 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Header() {
   return (
     <header className="border-b border-brand-100/80 bg-white/70 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-3">
-          <Image
+          <img
             src="/images/ui-project-hub-mark.svg"
             alt="UI Project Hub"
             width={40}
             height={40}
             className="h-10 w-10 shrink-0"
-            priority
           />
           <div className="min-w-0">
             <p className="truncate text-[17px] font-semibold tracking-tightish text-zinc-900">

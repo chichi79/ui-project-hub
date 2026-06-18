@@ -7,8 +7,13 @@ export const metadata: Metadata = {
   title: "UI Project Hub",
   description: "UI 팀 자체 프로젝트와 아이디어를 모아보는 허브",
   icons: {
-    icon: "/images/ui-project-hub-mark.svg",
-    apple: "/images/ui-project-hub-mark.svg",
+    icon: [{ url: "/images/ui-project-hub-mark.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/images/ui-project-hub-mark.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    title: "UI Project Hub",
+    description: "UI 팀 자체 프로젝트와 아이디어를 모아보는 허브",
+    images: [{ url: "/images/ui-project-hub-mark.svg", width: 64, height: 64, alt: "UI Project Hub" }],
   },
 };
 

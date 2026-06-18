@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Comment, Project, ProjectStatus } from "@/lib/types";
-import { STATUS_COLORS, STATUS_LABELS, formatDate, parseTags } from "@/lib/utils";
+import { STATUS_COLORS, STATUS_LABELS, formatDate, normalizeUrl, parseTags } from "@/lib/utils";
 import CommentTicker from "@/components/CommentTicker";
 import ProjectThumbnail from "@/components/ProjectThumbnail";
 
@@ -11,21 +11,34 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, comments = [] }: ProjectCardProps) {
   const tags = parseTags(project.tags);
+  const demoUrl = project.demo_url?.trim();
 
   return (
-    <Link
-      href={`/projects/${project.id}`}
-      className="card group flex gap-4 p-4 transition hover:border-brand-200 hover:shadow-soft sm:gap-5 sm:p-5"
-    >
-      <div className="relative h-[4.5rem] w-[6.5rem] shrink-0 overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50 sm:h-20 sm:w-[7.5rem]">
-        <ProjectThumbnail
-          src={project.thumbnail}
-          alt={project.title}
-          className="object-cover object-top transition duration-500 group-hover:scale-[1.03]"
-        />
+    <div className="card group flex gap-4 p-4 transition hover:border-brand-200 hover:shadow-soft sm:gap-5 sm:p-5">
+      <div className="flex w-[6.5rem] shrink-0 flex-col gap-1.5 sm:w-[7.5rem]">
+        <Link
+          href={`/projects/${project.id}`}
+          className="relative block h-[4.5rem] overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50 sm:h-20"
+        >
+          <ProjectThumbnail
+            src={project.thumbnail}
+            alt={project.title}
+            className="object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+          />
+        </Link>
+        {demoUrl && (
+          <a
+            href={normalizeUrl(demoUrl)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-md border border-zinc-200 bg-white px-2 py-1 text-center text-[10px] font-medium text-zinc-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+          >
+            데모 바로가기
+          </a>
+        )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <Link href={`/projects/${project.id}`} className="flex min-w-0 flex-1 flex-col">
         <div className="mb-1.5 flex items-start justify-between gap-2">
           <h3 className="line-clamp-1 text-[15px] font-semibold tracking-tightish text-zinc-900 group-hover:text-brand-700">
             {project.title}
@@ -69,7 +82,7 @@ export default function ProjectCard({ project, comments = [] }: ProjectCardProps
             <span className="shrink-0">{formatDate(project.updated_at)}</span>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
