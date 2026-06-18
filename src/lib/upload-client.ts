@@ -85,13 +85,37 @@ async function uploadViaBlobDirect(file: File): Promise<string> {
     return uploadViaServer(file);
   }
 
-  const { put } = await import("@vercel/blob/client");
-  const blob = await put((data.pathname as string) || pathname, file, {
-    access: "public",
-    token: data.clientToken as string,
-    contentType: file.type || "image/jpeg",
-  });
-  return blob.url;
+  // @vercel/blob/client 은 undici 의존성으로 브라우저에서 오동작할 수 있어
+  // Vercel Blob REST API를 직접 fetch로 호출합니다.
+  const clientToken = data.clientToken as string;
+  const blobPathname = (data.pathname as string) || pathname;
+  const [, , , storeId = ""] = clientToken.split("_");
+  const requestId = `${storeId}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+
+  const blobRes = await fetch(
+    `https://blob.vercel-storage.com/?${new URLSearchParams({ pathname: blobPathname })}`,
+    {
+      method: "PUT",
+      headers: {
+        authorization: `Bearer ${clientToken}`,
+        "x-api-version": "9",
+        "x-content-type": file.type || "image/jpeg",
+        "x-api-blob-request-id": requestId,
+        "x-api-blob-request-attempt": "0",
+      },
+      body: file,
+      signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
+    }
+  );
+
+  if (!blobRes.ok) {
+    const errText = await blobRes.text().catch(() => "");
+    throw new Error(`Blob 업로드 실패 (${blobRes.status})${errText ? `: ${errText.slice(0, 120)}` : ""}`);
+  }
+
+  const blobData = (await blobRes.json()) as { url: string };
+  if (!blobData.url) throw new Error("Blob URL을 받지 못했습니다.");
+  return blobData.url;
 }
 
 async function uploadViaServer(file: File): Promise<string> {
