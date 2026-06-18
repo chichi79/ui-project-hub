@@ -1,6 +1,6 @@
 import type { Comment, FeedbackStatus, FeedbackType, ProgressUpdate, Project, ProjectStatus } from "./types";
 import { isFeedbackType } from "./feedback";
-import { verifyPassword } from "./auth";
+import { verifyPassword, hashPassword, DEFAULT_PROJECT_PASSWORD } from "./auth";
 import type { DocumentData } from "firebase-admin/firestore";
 import { firestoreSetupError, getFirestoreDb, isFirestoreNotFoundError } from "./firebase-admin";
 
@@ -137,7 +137,7 @@ async function seedIfEmpty() {
       repo_url: null,
       demo_url: null,
       thumbnail: null,
-      password_hash: "",
+      password_hash: hashPassword(DEFAULT_PROJECT_PASSWORD),
       created_at: t,
       updated_at: t,
     });

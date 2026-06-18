@@ -7,6 +7,7 @@ import { pickSiteUrl } from "@/lib/url";
 import ProgressForm from "./ProgressForm";
 import ProjectEditForm from "./ProjectEditForm";
 import { setOwnerSession, clearOwnerSession } from "@/lib/owner-session";
+import { DEFAULT_PROJECT_PASSWORD } from "@/lib/auth";
 import {
   STATUS_COLORS,
   STATUS_DOT_COLORS,
@@ -17,9 +18,10 @@ import {
 interface OwnerPanelProps {
   project: Project;
   progressUpdates: ProgressUpdate[];
+  onProjectUpdate: (project: Project) => void;
 }
 
-export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
+export function OwnerPanel({ project, progressUpdates, onProjectUpdate }: OwnerPanelProps) {
   const router = useRouter();
   const [unlocked, setUnlocked] = useState(false);
   const [password, setPassword] = useState("");
@@ -112,7 +114,7 @@ export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "썸네일 저장 실패");
-      router.refresh();
+      onProjectUpdate(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "캡처 실패");
     } finally {
@@ -128,6 +130,9 @@ export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
             <h2 className="section-title mb-1">프로젝트 관리</h2>
             <p className="section-desc mb-5">
               비밀번호 확인 후 프로젝트 수정·삭제 및 피드백 상태 변경이 가능합니다.
+              <span className="mt-1 block text-xs text-zinc-400">
+                기본 비밀번호는 {DEFAULT_PROJECT_PASSWORD}입니다.
+              </span>
             </p>
             <form onSubmit={handleUnlock} className="space-y-3">
               {error && (
@@ -138,7 +143,7 @@ export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
-                placeholder="비밀번호"
+                placeholder={`기본 비밀번호 ${DEFAULT_PROJECT_PASSWORD}`}
                 required
               />
               <button type="submit" disabled={loading} className="btn-primary w-full text-sm">
@@ -169,6 +174,14 @@ export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
               password={password}
               currentStatus={project.status as ProjectStatus}
               currentProgress={project.progress}
+              onUpdated={(status, progress) =>
+                onProjectUpdate({
+                  ...project,
+                  status,
+                  progress,
+                  updated_at: new Date().toISOString(),
+                })
+              }
             />
 
             {(project.demo_url || project.repo_url) && (
@@ -187,6 +200,7 @@ export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
                 project={project}
                 password={password}
                 onCancel={() => setEditing(false)}
+                onSaved={onProjectUpdate}
               />
             )}
 

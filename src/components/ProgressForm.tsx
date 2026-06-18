@@ -12,6 +12,7 @@ interface ProgressFormProps {
   password: string;
   currentStatus: ProjectStatus;
   currentProgress: number;
+  onUpdated?: (status: ProjectStatus, progress: number) => void;
 }
 
 export default function ProgressForm({
@@ -19,6 +20,7 @@ export default function ProgressForm({
   password,
   currentStatus,
   currentProgress,
+  onUpdated,
 }: ProgressFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -46,6 +48,7 @@ export default function ProgressForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "업데이트 실패");
+      onUpdated?.(body.status, body.progress);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "업데이트 실패");

@@ -9,6 +9,7 @@ import ImageUpload from "@/components/ImageUpload";
 import AuthorInput from "@/components/AuthorInput";
 import { setUserName } from "@/lib/user";
 import { normalizeUrl } from "@/lib/utils";
+import { DEFAULT_PROJECT_PASSWORD } from "@/lib/auth";
 
 const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_hold"];
 
@@ -80,7 +81,11 @@ export default function NewProjectPage() {
           목록
         </Link>
         <h1 className="page-title">프로젝트 등록</h1>
-        <p className="page-desc">누구나 등록할 수 있습니다. 수정 시 비밀번호가 필요합니다.</p>
+        <p className="page-desc">누구나 등록할 수 있습니다. 수정·삭제 시 비밀번호가 필요합니다.</p>
+      </div>
+
+      <div className="mb-5 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-brand-900">
+        기본 수정 비밀번호는 <strong>{DEFAULT_PROJECT_PASSWORD}</strong>입니다. 등록 시 그대로 두거나 원하는 비밀번호로 변경할 수 있습니다.
       </div>
 
       <form onSubmit={handleSubmit} className="card space-y-5 p-6 sm:p-8">
@@ -115,11 +120,27 @@ export default function NewProjectPage() {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="수정 비밀번호" required hint="4자 이상">
-            <input name="password" type="password" required minLength={4} className="input-field" placeholder="비밀번호" />
+          <Field label="수정 비밀번호" required hint={`기본값 ${DEFAULT_PROJECT_PASSWORD}`}>
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={4}
+              defaultValue={DEFAULT_PROJECT_PASSWORD}
+              className="input-field"
+              placeholder="비밀번호"
+            />
           </Field>
           <Field label="비밀번호 확인" required>
-            <input name="password_confirm" type="password" required minLength={4} className="input-field" placeholder="비밀번호 확인" />
+            <input
+              name="password_confirm"
+              type="password"
+              required
+              minLength={4}
+              defaultValue={DEFAULT_PROJECT_PASSWORD}
+              className="input-field"
+              placeholder="비밀번호 확인"
+            />
           </Field>
         </div>
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Project, ProjectStatus } from "@/lib/types";
 import { STATUS_LABELS, normalizeUrl } from "@/lib/utils";
 import ImageUpload from "./ImageUpload";
@@ -12,10 +11,10 @@ interface ProjectEditFormProps {
   project: Project;
   password: string;
   onCancel: () => void;
+  onSaved: (project: Project) => void;
 }
 
-export default function ProjectEditForm({ project, password, onCancel }: ProjectEditFormProps) {
-  const router = useRouter();
+export default function ProjectEditForm({ project, password, onCancel, onSaved }: ProjectEditFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(project.thumbnail);
@@ -29,7 +28,7 @@ export default function ProjectEditForm({ project, password, onCancel }: Project
     const demoUrl = normalizeUrl((form.get("demo_url") as string) || "");
     const repoUrl = normalizeUrl((form.get("repo_url") as string) || "");
 
-    const body = {
+    const body: Record<string, unknown> = {
       password,
       title: form.get("title") as string,
       description: form.get("description") as string,
@@ -38,8 +37,11 @@ export default function ProjectEditForm({ project, password, onCancel }: Project
       repo_url: repoUrl,
       demo_url: demoUrl,
       tags: form.get("tags") as string,
-      thumbnail: thumbnail || "",
     };
+
+    if (thumbnail !== project.thumbnail) {
+      body.thumbnail = thumbnail || "";
+    }
 
     try {
       const res = await fetch(`/api/projects/${project.id}`, {
@@ -49,7 +51,7 @@ export default function ProjectEditForm({ project, password, onCancel }: Project
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "수정 실패");
-      router.refresh();
+      onSaved(data);
       onCancel();
     } catch (err) {
       setError(err instanceof Error ? err.message : "수정 실패");

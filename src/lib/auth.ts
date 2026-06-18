@@ -3,6 +3,8 @@ import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
 const SALT_LEN = 16;
 const KEY_LEN = 64;
 
+export const DEFAULT_PROJECT_PASSWORD = "1111";
+
 export function hashPassword(password: string): string {
   const salt = randomBytes(SALT_LEN).toString("hex");
   const hash = scryptSync(password, salt, KEY_LEN).toString("hex");
