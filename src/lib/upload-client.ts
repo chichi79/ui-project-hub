@@ -1,33 +1,9 @@
 const MAX_SIZE = 5 * 1024 * 1024;
-const UPLOAD_TIMEOUT_MS = 45_000;
-const BLOB_CLIENT_TIMEOUT_MS = 30_000;
-
-function isLocalHost(): boolean {
-  if (typeof window === "undefined") return false;
-  const host = window.location.hostname;
-  return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
-}
-
-function uniqueFilename(original: string): string {
-  const ext = original.split(".").pop()?.toLowerCase() || "jpg";
-  return `uploads/capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-}
-
-async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("timeout")), ms);
-  });
-  try {
-    return await Promise.race([promise, timeout]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
+const UPLOAD_TIMEOUT_MS = 25_000;
 
 async function prepareImageForUpload(file: File): Promise<File> {
   if (file.type === "image/gif") return file;
-  if (file.size < 200_000) return file;
+  if (file.size < 100_000) return file;
 
   try {
     const bitmap = await createImageBitmap(file);
@@ -82,22 +58,19 @@ async function parseUploadResponse(res: Response): Promise<{ url?: string; error
   }
 }
 
-async function uploadViaBlobClient(file: File): Promise<string> {
-  const { upload } = await import("@vercel/blob/client");
-  const blob = await upload(uniqueFilename(file.name), file, {
-    access: "public",
-    handleUploadUrl: "/api/upload",
-  });
-  return blob.url;
-}
+/** 브라우저 → 서버 API → Vercel Blob / 로컬 저장 */
+export async function uploadImageFile(file: File): Promise<string> {
+  if (file.size > MAX_SIZE) {
+    throw new Error("파일 크기는 5MB 이하여야 합니다.");
+  }
 
-async function uploadViaServer(file: File): Promise<string> {
+  const prepared = await prepareImageForUpload(file);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
 
   try {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", prepared);
     const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
@@ -115,23 +88,4 @@ async function uploadViaServer(file: File): Promise<string> {
   } finally {
     clearTimeout(timer);
   }
-}
-
-/** 브라우저에서 이미지 파일 업로드 */
-export async function uploadImageFile(file: File): Promise<string> {
-  if (file.size > MAX_SIZE) {
-    throw new Error("파일 크기는 5MB 이하여야 합니다.");
-  }
-
-  const prepared = await prepareImageForUpload(file);
-
-  if (!isLocalHost()) {
-    try {
-      return await withTimeout(uploadViaBlobClient(prepared), BLOB_CLIENT_TIMEOUT_MS);
-    } catch {
-      return uploadViaServer(prepared);
-    }
-  }
-
-  return uploadViaServer(prepared);
 }

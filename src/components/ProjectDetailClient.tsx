@@ -114,7 +114,11 @@ export function OwnerPanel({ project, progressUpdates, onProjectUpdate }: OwnerP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      if (text.trimStart().startsWith("<")) {
+        throw new Error("캡처 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.");
+      }
+      const data = JSON.parse(text) as Project & { error?: string };
       if (!res.ok) throw new Error(data.error || "썸네일 저장 실패");
       onProjectUpdate(data);
       setRecaptureSuccess(true);

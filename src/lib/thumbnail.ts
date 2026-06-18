@@ -76,7 +76,7 @@ export async function generateUrlThumbnail(siteUrl: string): Promise<string> {
 
 async function downloadAndSave(imageUrl: string): Promise<string> {
   const res = await fetch(imageUrl, {
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(10_000),
     headers: { "User-Agent": "Mozilla/5.0 (compatible; UIProjectHub/1.0)" },
   });
   if (!res.ok) throw new Error("이미지 다운로드 실패");
@@ -160,7 +160,7 @@ export async function regenerateProjectThumbnail(siteUrl: string): Promise<strin
   }
 
   try {
-    const screenshot = await captureViaMicrolink(url, 18_000);
+    const screenshot = await captureViaMicrolink(url, 12_000);
     if (screenshot) return screenshot;
   } catch {
     // fallback below

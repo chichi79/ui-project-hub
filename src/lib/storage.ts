@@ -1,9 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { compressImageForStorage, DATA_URL_TARGET_BYTES } from "./image-compress";
 import { uploadToFirebaseStorage } from "./firebase-storage";
 
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
+
+/** Firestore 문서 크기를 고려한 data URL용 최대 바이트 */
+const DATA_URL_TARGET_BYTES = 280_000;
 
 function getBlobToken(): string | undefined {
   return process.env.BLOB_READ_WRITE_TOKEN?.trim() || undefined;
@@ -42,45 +44,28 @@ async function saveToVercelBlob(
 }
 
 export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<string> {
-  let uploadBuffer = buffer;
-  let contentType = mimeForExt(ext);
-  let uploadExt = ext;
-
+  const contentType = mimeForExt(ext);
+  const filename = makeFilename(ext);
   const blobToken = getBlobToken();
 
-  if (process.env.VERCEL && !blobToken) {
-    const compressed = await compressImageForStorage(buffer);
-    uploadBuffer = compressed.buffer;
-    contentType = compressed.contentType;
-    uploadExt = compressed.ext;
-  }
-
-  const filename = makeFilename(uploadExt);
-
   if (blobToken) {
-    return saveToVercelBlob(filename, uploadBuffer, contentType);
+    return saveToVercelBlob(filename, buffer, contentType);
   }
 
-  const firebaseUrl = await uploadToFirebaseStorage(uploadBuffer, filename, contentType);
+  const firebaseUrl = await uploadToFirebaseStorage(buffer, filename, contentType);
   if (firebaseUrl) return firebaseUrl;
 
-  if (!process.env.VERCEL && uploadBuffer.length > DATA_URL_TARGET_BYTES) {
-    const compressed = await compressImageForStorage(uploadBuffer);
-    uploadBuffer = compressed.buffer;
-    contentType = compressed.contentType;
-  }
-
   if (process.env.VERCEL) {
-    if (uploadBuffer.length > DATA_URL_TARGET_BYTES) {
-      throw new Error("이미지를 저장할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+    if (buffer.length > DATA_URL_TARGET_BYTES) {
+      throw new Error("이미지가 너무 큽니다. 더 작은 이미지를 사용해 주세요.");
     }
-    return `data:${contentType};base64,${uploadBuffer.toString("base64")}`;
+    return `data:${contentType};base64,${buffer.toString("base64")}`;
   }
 
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
-  fs.writeFileSync(path.join(uploadsDir, filename), uploadBuffer);
+  fs.writeFileSync(path.join(uploadsDir, filename), buffer);
   return `/uploads/${filename}`;
 }
 
