@@ -1,4 +1,5 @@
 import { normalizeUrl } from "./utils";
+import { uploadImageFile } from "./upload-client";
 
 const METHOD_TIMEOUT_MS = 10_000;
 const TOTAL_TIMEOUT_MS = 15_000;
@@ -30,12 +31,10 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 }
 
 async function uploadBlob(blob: Blob, filename = "capture.jpg"): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", blob, filename);
-  const res = await fetchWithTimeout("/api/upload", { method: "POST", body: formData }, METHOD_TIMEOUT_MS);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "업로드 실패");
-  return data.url;
+  const file = new File([blob], filename, {
+    type: blob.type || "image/jpeg",
+  });
+  return uploadImageFile(file);
 }
 
 async function fetchImageAsBlob(imageUrl: string): Promise<Blob> {

@@ -19,7 +19,9 @@ export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<stri
   if (process.env.VERCEL) {
     const maxDataUrlBytes = 100_000;
     if (buffer.length > maxDataUrlBytes) {
-      throw new Error("Vercel에서 큰 이미지 업로드는 Blob Storage 연결이 필요합니다.");
+      throw new Error(
+        "이미지가 너무 큽니다. Vercel 대시보드에서 Blob Storage를 연결하거나, 100KB 이하 이미지를 사용해 주세요."
+      );
     }
     const mime = mimeForExt(ext);
     return `data:${mime};base64,${buffer.toString("base64")}`;
@@ -41,7 +43,7 @@ function mimeForExt(ext: string): string {
 }
 
 export async function saveUploadedFile(file: File): Promise<string> {
-  const ext = file.name.split(".").pop() || "jpg";
   const buffer = Buffer.from(await file.arrayBuffer());
+  const ext = file.name.split(".").pop() || "jpg";
   return saveImageBuffer(buffer, ext);
 }

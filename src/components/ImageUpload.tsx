@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { uploadImageFile } from "@/lib/upload-client";
 
 interface ImageUploadProps {
   value: string | null;
@@ -22,14 +23,9 @@ export default function ImageUpload({ value, onChange, label = "캡처 이미지
     setUploading(true);
     setError("");
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "업로드 실패");
-      onChange(data.url);
+      const url = await uploadImageFile(file);
+      onChange(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "업로드 실패");
     } finally {
@@ -88,7 +84,7 @@ export default function ImageUpload({ value, onChange, label = "캡처 이미지
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
         onChange={handleFile}
         className="hidden"
       />
