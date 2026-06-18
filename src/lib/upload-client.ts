@@ -1,5 +1,17 @@
 const MAX_SIZE = 5 * 1024 * 1024;
-const UPLOAD_TIMEOUT_MS = 25_000;
+const TOKEN_TIMEOUT_MS = 10_000;
+const UPLOAD_TIMEOUT_MS = 60_000;
+
+function isLocalHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+}
+
+function uniquePathname(file: File): string {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  return `uploads/capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+}
 
 async function prepareImageForUpload(file: File): Promise<File> {
   if (file.type === "image/gif") return file;
@@ -40,45 +52,65 @@ async function prepareImageForUpload(file: File): Promise<File> {
   }
 }
 
-async function parseUploadResponse(res: Response): Promise<{ url?: string; error?: string }> {
+async function parseJsonResponse(res: Response): Promise<Record<string, unknown>> {
   const text = await res.text();
   if (text.trimStart().startsWith("<")) {
-    throw new Error(
-      res.status === 413
-        ? "이미지가 너무 큽니다. 더 작은 이미지를 사용해 주세요."
-        : "서버에서 이미지를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."
-    );
+    throw new Error("서버에서 이미지를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
-
   try {
-    return JSON.parse(text) as { url?: string; error?: string };
+    return JSON.parse(text) as Record<string, unknown>;
   } catch {
     if (!res.ok) throw new Error(`업로드 실패 (${res.status})`);
     throw new Error("업로드 응답을 읽을 수 없습니다.");
   }
 }
 
-/** 브라우저 → 서버 API → Vercel Blob / 로컬 저장 */
-export async function uploadImageFile(file: File): Promise<string> {
-  if (file.size > MAX_SIZE) {
-    throw new Error("파일 크기는 5MB 이하여야 합니다.");
+async function uploadViaBlobDirect(file: File): Promise<string> {
+  const pathname = uniquePathname(file);
+  const tokenRes = await fetch("/api/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      pathname,
+      contentType: file.type || "image/jpeg",
+    }),
+    signal: AbortSignal.timeout(TOKEN_TIMEOUT_MS),
+  });
+
+  const data = await parseJsonResponse(tokenRes);
+  if (!tokenRes.ok) {
+    throw new Error((data.error as string) || "업로드 토큰 발급 실패");
+  }
+  if (data.mode === "server" || !data.clientToken) {
+    return uploadViaServer(file);
   }
 
-  const prepared = await prepareImageForUpload(file);
+  const { put } = await import("@vercel/blob/client");
+  const blob = await put((data.pathname as string) || pathname, file, {
+    access: "public",
+    token: data.clientToken as string,
+    contentType: file.type || "image/jpeg",
+  });
+  return blob.url;
+}
+
+async function uploadViaServer(file: File): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
 
   try {
     const formData = new FormData();
-    formData.append("file", prepared);
+    formData.append("file", file);
     const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
       signal: controller.signal,
     });
-    const data = await parseUploadResponse(res);
-    if (!res.ok) throw new Error(data.error || "업로드 실패");
-    if (!data.url) throw new Error("업로드 URL을 받지 못했습니다.");
+    const data = await parseJsonResponse(res);
+    if (!res.ok) throw new Error((data.error as string) || "업로드 실패");
+    if (typeof data.url !== "string") {
+      throw new Error("업로드 URL을 받지 못했습니다.");
+    }
     return data.url;
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
@@ -88,4 +120,23 @@ export async function uploadImageFile(file: File): Promise<string> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** 브라우저에서 이미지 업로드 */
+export async function uploadImageFile(file: File): Promise<string> {
+  if (file.size > MAX_SIZE) {
+    throw new Error("파일 크기는 5MB 이하여야 합니다.");
+  }
+
+  const prepared = await prepareImageForUpload(file);
+
+  if (!isLocalHost()) {
+    try {
+      return await uploadViaBlobDirect(prepared);
+    } catch {
+      return uploadViaServer(prepared);
+    }
+  }
+
+  return uploadViaServer(prepared);
 }

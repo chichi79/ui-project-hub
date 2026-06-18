@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { uploadToFirebaseStorage } from "./firebase-storage";
+import { getBlobReadWriteToken } from "./blob-token";
 
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
 
@@ -8,7 +9,7 @@ const uploadsDir = path.join(process.cwd(), "public", "uploads");
 const DATA_URL_TARGET_BYTES = 280_000;
 
 function getBlobToken(): string | undefined {
-  return process.env.BLOB_READ_WRITE_TOKEN?.trim() || undefined;
+  return getBlobReadWriteToken();
 }
 
 function makeFilename(ext: string): string {
@@ -38,6 +39,7 @@ async function saveToVercelBlob(
   const blob = await put(`uploads/${filename}`, buffer, {
     access: "public",
     contentType,
+    token: getBlobToken(),
     addRandomSuffix: true,
   });
   return blob.url;
