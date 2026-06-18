@@ -15,6 +15,16 @@ export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<stri
     return blob.url;
   }
 
+  // Vercel serverless: writable filesystem 없음 → 작은 이미지는 data URL로 저장
+  if (process.env.VERCEL) {
+    const maxDataUrlBytes = 100_000;
+    if (buffer.length > maxDataUrlBytes) {
+      throw new Error("Vercel에서 큰 이미지 업로드는 Blob Storage 연결이 필요합니다.");
+    }
+    const mime = mimeForExt(ext);
+    return `data:${mime};base64,${buffer.toString("base64")}`;
+  }
+
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }

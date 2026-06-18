@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Project, ProjectStatus } from "@/lib/types";
 import { STATUS_LABELS, normalizeUrl } from "@/lib/utils";
-import { captureUrlThumbnail } from "@/lib/capture-client";
-import { getSiteUrlFromForm } from "@/lib/url";
 import ImageUpload from "./ImageUpload";
 
 const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_hold"];
@@ -19,7 +17,6 @@ interface ProjectEditFormProps {
 export default function ProjectEditForm({ project, password, onCancel }: ProjectEditFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(project.thumbnail);
 
@@ -32,19 +29,6 @@ export default function ProjectEditForm({ project, password, onCancel }: Project
     const demoUrl = normalizeUrl((form.get("demo_url") as string) || "");
     const repoUrl = normalizeUrl((form.get("repo_url") as string) || "");
 
-    let finalThumbnail = thumbnail;
-    const siteUrl = getSiteUrlFromForm(demoUrl, repoUrl);
-
-    if (!finalThumbnail && siteUrl) {
-      setCapturing(true);
-      try {
-        const captured = await captureUrlThumbnail(siteUrl);
-        if (captured) finalThumbnail = captured;
-      } finally {
-        setCapturing(false);
-      }
-    }
-
     const body = {
       password,
       title: form.get("title") as string,
@@ -54,7 +38,7 @@ export default function ProjectEditForm({ project, password, onCancel }: Project
       repo_url: repoUrl,
       demo_url: demoUrl,
       tags: form.get("tags") as string,
-      thumbnail: finalThumbnail || "",
+      thumbnail: thumbnail || "",
     };
 
     try {
@@ -102,8 +86,8 @@ export default function ProjectEditForm({ project, password, onCancel }: Project
 
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="btn-secondary text-sm">취소</button>
-        <button type="submit" disabled={loading || capturing} className="btn-primary text-sm">
-          {capturing ? "캡처 중..." : loading ? "저장 중..." : "저장"}
+        <button type="submit" disabled={loading} className="btn-primary text-sm">
+          {loading ? "저장 중..." : "저장"}
         </button>
       </div>
     </form>

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Project, ProjectStatus, ProgressUpdate } from "@/lib/types";
-import { captureUrlThumbnail } from "@/lib/capture-client";
 import { pickSiteUrl } from "@/lib/url";
 import ProgressForm from "./ProgressForm";
 import ProjectEditForm from "./ProjectEditForm";
@@ -106,13 +105,10 @@ export function OwnerPanel({ project, progressUpdates }: OwnerPanelProps) {
     setRecapturing(true);
     setError("");
     try {
-      const captured = await captureUrlThumbnail(siteUrl);
-      if (!captured) throw new Error("화면 캡처에 실패했습니다. 직접 이미지를 업로드해 주세요.");
-
       const res = await fetch(`/api/projects/${project.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, thumbnail: captured }),
+        body: JSON.stringify({ password, thumbnail: "" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "썸네일 저장 실패");

@@ -7,8 +7,6 @@ import type { ProjectStatus } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/utils";
 import ImageUpload from "@/components/ImageUpload";
 import AuthorInput from "@/components/AuthorInput";
-import { captureUrlThumbnail } from "@/lib/capture-client";
-import { getSiteUrlFromForm } from "@/lib/url";
 import { setUserName } from "@/lib/user";
 import { normalizeUrl } from "@/lib/utils";
 
@@ -17,12 +15,12 @@ const STATUSES: ProjectStatus[] = ["idea", "in_progress", "review", "done", "on_
 export default function NewProjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
     setError("");
 
     const form = new FormData(e.currentTarget);
@@ -41,21 +39,6 @@ export default function NewProjectPage() {
     const demoUrl = normalizeUrl((form.get("demo_url") as string) || "");
     const repoUrl = normalizeUrl((form.get("repo_url") as string) || "");
 
-    let finalThumbnail = thumbnail;
-    const siteUrl = getSiteUrlFromForm(demoUrl, repoUrl);
-    if (!finalThumbnail && siteUrl) {
-      setCapturing(true);
-      try {
-        const captured = await captureUrlThumbnail(siteUrl);
-        if (captured) finalThumbnail = captured;
-      } catch {
-        // 캡처 실패 시 서버에서 SVG 썸네일 생성
-      } finally {
-        setCapturing(false);
-      }
-    }
-
-    setLoading(true);
     const body = {
       title: form.get("title") as string,
       description: form.get("description") as string,
@@ -66,7 +49,7 @@ export default function NewProjectPage() {
       repo_url: repoUrl,
       demo_url: demoUrl,
       tags: form.get("tags") as string,
-      thumbnail: finalThumbnail || "",
+      thumbnail: thumbnail || "",
     };
 
     try {
@@ -148,12 +131,12 @@ export default function NewProjectPage() {
           <Field label="저장소 URL" hint="https:// 없이 입력 가능">
             <input name="repo_url" type="text" className="input-field" placeholder="github.com/..." />
           </Field>
-          <Field label="데모 URL" hint="등록 시 사이트 화면을 캡처해 썸네일로 사용">
+          <Field label="데모 URL" hint="등록 시 서버에서 URL 미리보기 썸네일 생성">
             <input name="demo_url" type="text" className="input-field" placeholder="example.com" />
           </Field>
         </div>
 
-        <ImageUpload value={thumbnail} onChange={setThumbnail} label="캡처 이미지 (선택)" hint="미입력 시 데모/저장소 URL에서 자동 캡처" />
+        <ImageUpload value={thumbnail} onChange={setThumbnail} label="썸네일 이미지 (선택)" hint="미입력 시 데모/저장소 URL로 자동 생성" />
 
         <Field label="태그" hint="쉼표로 구분">
           <input name="tags" className="input-field" placeholder="AI, React, 자동화" />
@@ -161,8 +144,8 @@ export default function NewProjectPage() {
 
         <div className="flex justify-end gap-3 pt-2">
           <Link href="/" className="btn-secondary">취소</Link>
-          <button type="submit" disabled={loading || capturing} className="btn-primary">
-            {capturing ? "화면 캡처 중..." : loading ? "등록 중..." : "등록하기"}
+          <button type="submit" disabled={loading} className="btn-primary">
+            {loading ? "등록 중..." : "등록하기"}
           </button>
         </div>
       </form>
