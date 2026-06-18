@@ -106,8 +106,8 @@ export async function generateProjectThumbnail(siteUrl: string): Promise<string>
   }
 
   const fastMethods = [
+    () => captureViaMicrolink(url, 10_000),
     () => captureViaPageMeta(url, 5_000),
-    () => captureViaMicrolink(url, 8_000),
   ];
 
   for (const method of fastMethods) {
@@ -138,7 +138,9 @@ async function captureViaPageMeta(siteUrl: string, timeoutMs = 15_000): Promise<
 }
 
 async function captureViaMicrolink(siteUrl: string, timeoutMs = 20_000): Promise<string | null> {
-  const api = `https://api.microlink.io/?url=${encodeURIComponent(siteUrl)}&screenshot=true&meta=false`;
+  const api =
+    `https://api.microlink.io/?url=${encodeURIComponent(siteUrl)}` +
+    "&screenshot=true&meta=false&viewport.width=1280&viewport.height=720";
   const res = await fetch(api, { signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) return null;
 
@@ -156,8 +158,8 @@ async function captureViaMshots(siteUrl: string): Promise<string | null> {
 
 async function captureRealScreenshot(siteUrl: string): Promise<string | null> {
   const methods = [
-    () => captureViaPageMeta(siteUrl),
     () => captureViaMicrolink(siteUrl),
+    () => captureViaPageMeta(siteUrl),
     () => captureViaMshots(siteUrl),
   ];
 
