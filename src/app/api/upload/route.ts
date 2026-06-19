@@ -9,7 +9,9 @@ export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
 async function handleFormUpload(request: NextRequest) {
+  console.log("[upload] start, content-type:", request.headers.get("content-type"));
   const formData = await request.formData();
+  console.log("[upload] formData parsed");
   const file = formData.get("file") as File | null;
 
   if (!file) {
@@ -24,6 +26,7 @@ async function handleFormUpload(request: NextRequest) {
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const buffer = Buffer.from(bytes);
+  console.log("[upload] buffer size:", buffer.length, "BLOB_READ_WRITE_TOKEN set:", !!process.env.BLOB_READ_WRITE_TOKEN, "FIREBASE_STORAGE_BUCKET set:", !!process.env.FIREBASE_STORAGE_BUCKET);
   const mime = resolveImageMime(file, bytes);
 
   if (!mime) {
@@ -37,6 +40,7 @@ async function handleFormUpload(request: NextRequest) {
     file.name.split(".").pop()?.toLowerCase() ||
     mime.replace("image/", "").replace("jpeg", "jpg");
   const url = await saveImageBuffer(buffer, ext);
+  console.log("[upload] done, url type:", url.startsWith("data:") ? "dataURL" : url.startsWith("http") ? "http" : "local");
   return NextResponse.json({ url });
 }
 
