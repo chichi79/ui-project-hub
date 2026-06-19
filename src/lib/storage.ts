@@ -29,13 +29,7 @@ async function saveToVercelBlob(
   buffer: Buffer,
   contentType: string
 ): Promise<string> {
-  const token = getBlobToken();
-  if (!token) {
-    throw new Error(
-      "Blob Storage 토큰이 없습니다. Vercel 환경 변수를 확인한 뒤 재배포해 주세요."
-    );
-  }
-
+  const token = getBlobToken()!;
   const { put } = await import("@vercel/blob");
   const suffix = `-${Math.random().toString(36).slice(2, 8)}`;
   const nameWithSuffix = filename.replace(/(\.[^.]+)$/, `${suffix}$1`);
@@ -45,7 +39,7 @@ async function saveToVercelBlob(
     contentType,
     token,
     addRandomSuffix: false,
-    abortSignal: AbortSignal.timeout(25_000),
+    abortSignal: AbortSignal.timeout(8_000),
   });
   return blob.url;
 }
@@ -56,7 +50,11 @@ export async function saveImageBuffer(buffer: Buffer, ext: string): Promise<stri
   const blobToken = getBlobToken();
 
   if (blobToken) {
-    return saveToVercelBlob(filename, buffer, contentType);
+    try {
+      return await saveToVercelBlob(filename, buffer, contentType);
+    } catch (err) {
+      console.error("[storage] Vercel Blob failed, falling back:", err);
+    }
   }
 
   const firebaseUrl = await uploadToFirebaseStorage(buffer, filename, contentType);
