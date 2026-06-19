@@ -53,16 +53,25 @@ async function parseJsonResponse(res: Response): Promise<Record<string, unknown>
   }
 }
 
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadViaServer(file: File): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
 
   try {
-    const formData = new FormData();
-    formData.append("file", file);
+    const base64 = await fileToBase64(file);
     const res = await fetch("/api/upload", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: base64, name: file.name, type: file.type }),
       signal: controller.signal,
     });
     const data = await parseJsonResponse(res);
